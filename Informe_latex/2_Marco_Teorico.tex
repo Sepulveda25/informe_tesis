@@ -1,19 +1,19 @@
 \chapter{Marco Teórico}
     \begin{section}{Presentación}
     
+        Las infracciones a las políticas de seguridad y los ataques han concentrado la atención sobre las capacidades de detección, investigación y mitigación de incidentes de seguridad de la información en  las organizaciones. Si bien no siempre es posible evitar un incidente de seguridad, es necesario detectar y responder rápidamente para minimizar el daño. Para ello, es preciso realizar inversiones inteligentes basadas en un plan de seguridad que comprenda la realidad y necesidades específicas de la organización, ya que un gran monto de dinero o equipos adquiridos por si mismos no garantizan una mayor protección. \par
+        Este plan debe incluir personal especializado, procedimientos e infraestructura  adaptados a la organización, con una gestión de objetivos a cumplir a corto, mediano y largo plazo. \par
+        Para las organizaciones que no cuentan con una capacidad de manejo de incidentes, la creación desde cero de un Computer Security Incident Response Team (CSIRT) puede ser un proceso complejo y costoso. Sin embargo, no es necesario una gran inversión para obtener las capacidades elementales ofrecidas por un CSIRT, ya que es posible desarrollar una solución específica y a escala de la organización. \par
+        Una vez identificadas las necesidades de la organización, el proceso de creación del CSIRT requiere de la creación, colaboración y comunicación entre los tres pilares que lo componen: el personal, la tecnología y los procesos, como se muestra en la Figura \ref{fig:pilares}. \par
+        
         \begin{figure}[H]
             \centering
             \includegraphics[width=1\textwidth]{./marco_teorico_imagenes/figura_1_pilares.png}
             \caption{Pilares de un CSIRT}
             \label{fig:pilares}
         \end{figure}
-        Las infracciones a las políticas de seguridad y los ataques han concentrado la atención sobre las capacidades de detección, investigación y mitigación de incidentes de seguridad de la información en  las organizaciones. Si bien no siempre es posible evitar un incidente de seguridad, es necesario detectar y responder rápidamente para minimizar el daño. Para ello, es preciso realizar inversiones inteligentes basadas en un plan de seguridad que comprenda la realidad y necesidades específicas de la organización, ya que un gran monto de dinero o equipos adquiridos por si mismos no garantizan una mayor protección. \par
-        Este plan debe incluir personal especializado, procedimientos e infraestructura  adaptados a la organización, con una gestión de objetivos a cumplir a corto, mediano y largo plazo. \par
-        Para las organizaciones que no cuentan con una capacidad de manejo de incidentes, la creación desde cero de un Computer Security Incident Response Team (CSIRT) puede ser un proceso complejo y costoso. Sin embargo, no es necesario una gran inversión para obtener las capacidades elementales ofrecidas por un CSIRT, ya que es posible desarrollar una solución específica y a escala de la organización. \par
-        Una vez identificadas las necesidades de la organización, el proceso de creación del CSIRT requiere de la creación, colaboración y comunicación entre los tres pilares que lo componen: el personal, la tecnología y los procesos, como se muestra en la Figura \ref{fig:pilares}. \par
-        
-        
         %\par
+        \FloatBarrier
         El CSIRT debe tener una perspectiva flexible y escalable para mantener el ritmo de las tácticas de los adversarios, acompañando el crecimiento y evolución de la organización. \par
     \end{section}
     
@@ -87,7 +87,7 @@
         Los CSIRT bien establecidos o maduros desarrollan continuamente la capacidad de aprovechar la inteligencia de información proveniente tanto de sus incidentes pasados como de fuentes de inteligencia compartidas. Ejemplos de estas últimas son los proveedores especializados, CSIRT aliados, divisiones policiales de cibercrimen, organizaciones de intercambio de información como la Information Technology - Information Sharing and Analysis Center (IT-ISAC) \cite{it_isac}, etc. \par
         La capacidad de utilizar la inteligencia de amenazas contribuye a mejorar la precisión de la detección. De esta manera, es posible detectar patrones de amenazas ocultas en puntos finales, logs y registros de red, reduciendo las oportunidades de desarrollo de un ataque.
         \end{subsection}
-      
+        \pagebreak
         \begin{subsection}{Obstáculos para el manejo eficiente de incidentes del CSIRT}
         Algunos de los obstáculos que deben ser evitados por un CSIRT son aquellos que generan cuellos de botella en el proceso de respuesta a incidentes.  Este proceso que consiste en el traslado de un incidente entre los sucesivos niveles del CSIRT, eventualmente puede generar “ruido blanco”: la presencia de una gran cantidad de alertas de poca importancia y / o falsos positivos. De prolongarse esta situación en el tiempo, se produce un fenómeno llamado “fatiga de alertas” que afecta a los analistas provocando una disminución en sus capacidades de atender incidentes prioritarios. \par
         Al momento de elegir una herramienta de monitoreo, se debe considerar que incluya entre sus características la personalización del umbral de alertas y la posibilidad de combinar distintas alertas en un mismo incidente. Una herramienta de este tipo permite a los analistas clasificar las alertas más rápido, reduciendo las capas de evaluación necesarias antes de que el evento pueda ser confirmado y mitigado. 
@@ -218,10 +218,12 @@
         \FloatBarrier    
         El objetivo, por lo tanto, de un sistema SIEM dentro del CSIRT es concentrar la información proveniente de múltiples fuentes independientes, procesar los datos y realizar un análisis centralizado.
     \end{section}
+    \pagebreak
     \begin{section}{Soluciones disponibles}
     Las principales soluciones que existen en el mercado, sean gratuitas, de software libre, pagas o de código propietario,  se presentan a continuación.\par
+    En primer lugar se realizó un relevamiento en sitios especializados y de referencia para el mercado mundial, con el objetivo de identificar las soluciones comerciales disponibles, que actualmente dominan el mercado global de SIEM . En el sitio web de Gartner \cite{ranking} se encontró un listado de los productos ordenados por valoración de los usuarios de dicha página. El resultado de los diez primeros productos junto a sus desarrolladores, se muestra en el Cuadro \ref{table:2}. \par
     \begin{center}
-        \begin{table}%[ht]
+        \begin{table}[H]
         \centering
         \begin{tabular}{ | m{4em} | m{22em}| m{12em} | }
             \hline
@@ -255,12 +257,8 @@
     \end{table}
     \end{center}
     \FloatBarrier
-    Se realizó un relevamiento en sitios especializados y de referencia para el mercado mundial, con el objetivo de identificar las herramientas que actualmente dominan el mercado global de SIEM disponibles comercialmente. En el sitio web de Gartner \cite{ranking} se encontró un listado de los productos ordenados por valoración de los usuarios de dicha página. El resultado de los diez primeros productos junto a sus desarrolladores, se muestra en el Cuadro \ref{table:2}. \par
-    %\setlength{\textfloatsep}{10pt plus 1.0pt minus 20.0pt}
-        
-        %\FloatBarrier
-        
-         \begin{table}[h]
+    En base a la información recolectada, se procedió a clasificar las herramientas bajo el criterio de la disponibilidad del código: propietarias o libres y el resultado se muestra en el Cuadro \ref{table:3}.
+        \begin{table}[h]
         \begin{tabular}{ | m{22em}| m{17em} | } 
             \hline
             Soluciones Pagas y Propietarias & Soluciones Libres y Gratuitas  \\ 
@@ -288,8 +286,9 @@
         \caption{Ranking Gartner \cite{ranking} de soluciones SIEM 2020}
         \label{table:3}
     \end{table}
-    \FloatBarrier
-    En base a la información recolectada, se procedió a clasificar las herramientas bajo el criterio de la disponibilidad del código: propietarias o libres y el resultado se muestra en el Cuadro \ref{table:3}.
+    
+    \pagebreak
+    
     \begin{subsection}{Soluciones comerciales}
     
         En nuestro análisis de las soluciones comerciales disponibles, se decidió describir la situación del mercado internacional en función de los siguientes criterios: 
@@ -308,14 +307,14 @@
         \FloatBarrier
         En la figura comparativa \ref{fig:tabla_valoracion} se observó que FortiSIEM y ADAudit Plus, de las compañías Fortinet\cite{fortisiem} y ManageEngine\cite{adaudit} respectivamente, son las soluciones mejor valoradas.
         \begin{figure}[H]
-            \centering
-            \includegraphics[width=1\textwidth]{./marco_teorico_imagenes/figura_10_porcentaje_sector_ind.png}
-            \caption{Porcentaje de adopción según el sector industrial}
-            \label{fig:sector_industrial}
+        \centering
+        \includegraphics[width=1\textwidth]{./marco_teorico_imagenes/figura_10_porcentaje_sector_ind.png}
+        \caption{Porcentaje de adopción según el sector industrial}
+        \label{fig:sector_industrial}
         \end{figure}
         \FloatBarrier
-       \vspace{-0,5cm}
-        En las Figuras \ref{fig:sector_industrial} y Figura \ref{fig:area_geografica_mundial} se aprecia que el sector financiero es el principal demandante de estas soluciones a nivel global, seguido por las industrias manufactureras y de salud. Los sectores industriales se destacan con diferencia respecto al resto en términos de adopción de soluciones SIEM. Esto se debe a que la automatización de la industria primero y su evolución al actual modelo de “industrias 4.0” \cite{industrias_4}, con cadenas de producción, montaje y ensamble distribuidas geográficamente alrededor del globo, implica uso masivo de sensores, redes y datos intrínsecos a cada fase de producción. Esto produjo la necesidad de contar con soluciones de ciberseguridad para evitar incidentes que impliquen el posible robo de información crítica o secretos industriales. De manera análoga al sector manufacturero, las clínicas, hospitales \cite{CCN_CERT} y centros de salud han sufrido el impacto de la digitalización de sus procesos tanto en el hardware médico, el almacenamiento y distribución de la información como en la protección de los sensibles datos privados de los pacientes y la estricta normativa que los regula. \par
+       
+        En las Figuras \ref{fig:sector_industrial} y \ref{fig:area_geografica_mundial} se aprecia que el sector financiero es el principal demandante de estas soluciones a nivel global, seguido por las industrias manufactureras y de salud. Los sectores industriales se destacan con diferencia respecto al resto en términos de adopción de soluciones SIEM. Esto se debe a que la automatización de la industria primero y su evolución al actual modelo de “industrias 4.0” \cite{industrias_4}, con cadenas de producción, montaje y ensamble distribuidas geográficamente alrededor del globo, implica uso masivo de sensores, redes y datos intrínsecos a cada fase de producción. Esto produjo la necesidad de contar con soluciones de ciberseguridad para evitar incidentes que impliquen el posible robo de información crítica o secretos industriales. De manera análoga al sector manufacturero, las clínicas, hospitales \cite{CCN_CERT} y centros de salud han sufrido el impacto de la digitalización de sus procesos tanto en el hardware médico, el almacenamiento y distribución de la información como en la protección de los sensibles datos privados de los pacientes y la estricta normativa que los regula. \par
         \begin{figure}[H]
             \centering
             \includegraphics[width=1\textwidth]{./marco_teorico_imagenes/figura_11_porcentaje_area_geografica.png}
@@ -374,7 +373,7 @@
 
             \end{subsubsection}
             \begin{subsubsection}{Security Onion}
-            Se trata de una distribución Linux basada en Ubuntu que cuenta con un suite de diversas herramientas dedicadas a la ciberseguridad. Utiliza la pila completa de Elastic Stack para la recopilación, procesamiento y visualización de la información. Admite distintos tipos de arquitectura de despliegue, permitiendo adaptar los recursos disponibles según las necesidades de una organización. Actualmente se encuentra en desarrollo y cuenta con el soporte activo de una comunidad. Es la solución elegida para el desarrollo de este proyecto integrador.
+            Se trata de una distribución Linux basada en Ubuntu \cite{ubuntu} que cuenta con un suite de diversas herramientas dedicadas a la ciberseguridad. Utiliza la pila completa de Elastic Stack para la recopilación, procesamiento y visualización de la información. Admite distintos tipos de arquitectura de despliegue, permitiendo adaptar los recursos disponibles según las necesidades de una organización. Actualmente se encuentra en desarrollo y cuenta con el soporte activo de una comunidad. Es la solución elegida para el desarrollo de este proyecto integrador.
             \end{subsubsection}
             
         \end{subsection} 
