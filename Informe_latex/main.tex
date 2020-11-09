@@ -11,6 +11,8 @@
 \usepackage{placeins}
 \usepackage{subfig}
 \usepackage[export]{adjustbox}
+\raggedbottom
+
 \usepackage[
 backend=biber,
 sorting=none
@@ -21,6 +23,7 @@ sorting=none
 \usepackage[a4paper,top=1in, bottom=1in, left=1in, right=1in]{geometry}
 
 \begin{document}
+
     \input{Caratula.tex}
     \input{Resumen.tex}
     % Índice general
@@ -46,7 +49,6 @@ sorting=none
     
     % Bibliografía 
     \printbibliography
-    
     \input{10_Anexos.tex}
     
 
