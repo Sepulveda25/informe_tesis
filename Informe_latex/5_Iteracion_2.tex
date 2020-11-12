@@ -1,113 +1,158 @@
-\chapter{Iteración 2: “Configuración y despliegue en un ambiente de prueba”}
-    En este proyecto se desarrolló sobre un ambiente de prueba primero y de producción después, sobre un servidor central y un sistema operativo de virtualización sobre el que se crearon un conjunto de máquinas virtuales, cada una alojando un servidor con nodos Forward, Master y el correspondiente a TheHive - Cortex. Se utilizó de guia los componentes, software y arquitectura de conexión entre ellos, mencionados en las iteraciones precedentes.
-    
-    \begin{section}{Configuración del ambiente de prueba}
-        El primer paso consistió en examinar los requisitos de hardware mínimos y recomendados por cada uno de los fabricantes de los sistemas y subsistemas elegidos, al mismo tiempo que se analizaron, por un lado, las demandas de tráfico de red en el ambiente de prueba y por el otro los requerimientos sobre los datos y capacidades que se esperan obtener del proyecto. Se procedió a realizar un diagrama topológico en la infraestructura objetivo, con esta información y los datos anteriormente mencionados, se procedió a realizar una estimación del hardware necesario para el servidor central que albergó las correspondientes máquinas virtuales de este proyecto.\par
-    	Los requerimientos de hardware necesarios se incluyen en el Cuadro \ref{table:5} discriminados según el tipo de nodo desplegado:
-        \begin{table}[H]
+\chapter{Iteración 2: “Componentes de la solución”}
+\begin{section}{Recibiendo, procesando y visualizando eventos: La pila Elastic}
+   En la Figura \ref{fig:figura_20_conexion_comp_elastic} se observa, que luego de recolectar los datos provenientes de múltiples fuentes, es necesario normalizarlos y agregarlos a la base de datos; estas tareas son llevadas a cabo por los componentes de la pila Elastic, en este caso Logstash y Elasticsearch, respectivamente. 
+
+   \begin{figure}[H]
         \centering
-        \begin{tabular}{|m{9em}|m{9em}|m{9em}|m{9em}|}
+        \includegraphics[width=0.45\textwidth]{./iteracion_1_imagenes/figura_20_conexion_comp_elastic.png}
+        \caption{Conexión de componentes Elastic}
+        \label{fig:figura_20_conexion_comp_elastic}
+    \end{figure}
         
-            \hline 
-                Requerimiento  & Nodo Master &  Nodo Forward & TheHive y Cortex \\ 
-            \hline
-                Cantidad de CPU - Arquitectura & 8 nucleos vCPU - x86-64 & 2 nucleos vCPU - x86-64 & 8 nucleos vCPU - x86-64 \\ 
-            \hline
-                Memoria RAM  & A partir de 16 GB & A partir de 16 GB & A partir de 8 GB \\ 
-            \hline
-                Almacenamiento necesario & A partir de 1 TB  & A partir de 540 GB & A partir de 60 GB \\
-            \hline %linea final de tabla
-        \end{tabular}
-        \caption{Requerimientos de hardware según el tipo de nodo desplegado. Los requerimientos varían según el tipo de enlace a monitorear.}
-        \label{table:5}
-    \end{table}
-     \FloatBarrier
-        En este proyecto se monitorearon enlaces de 1 Gbps de ancho de banda, por lo tanto los requerimientos para el nodo forward se incrementaron a 10 núcleos vCPU y 32 GB de memoria RAM. \par
-    	Siguiendo el diagrama de la arquitectura de despliegue de la sección anterior, se optimizó al máximo el uso de los recursos del servidor disponible para permitir el despliegue de cuatro nodos: dos Forward y un Master de Security Onion, así como un cuarto conteniendo a TheHive y Cortex. \par
-
-        \begin{subsection}{Configuración del entorno de virtualización}
-        Para el entorno de virtualización se utilizó VMWare \cite{vmware}, concretamente la suite vSphere HyperVisor v6.7.0 u3. Este sistema operativo basado en Unix permite gestionar los recursos de hardware disponibles, almacenar imágenes de distintos sistemas operativos y crear máquinas virtuales con estos últimos. Durante el proceso de creación de una máquina virtual, se selecciona el sistema operativo deseado y es posible asignar distintas cantidades de memoria principal, secundaria, cantidad de vCPU, número y tipo de enlaces de red, entre otros parámetros. \par
-         \begin{figure}[H]
-          \centering
-           \includegraphics[width=0.7\textwidth]{./iteracion_2_imagenes/figura_34_diagrama_VM.png}
-            \caption{ Diagrama de una máquina virtual desde el punto de vista de un HyperVisor\cite{vmware}}
-            \label{fig:maquina_virtual}
-        \end{figure}
-        \end{subsection}
-        
-        \begin{subsection}{Definición y configuración de las redes a observar}
-            Se decidió monitorear dos dependencias en base a un análisis del ancho de banda de las dependencias existentes, por lo tanto se seleccionaron las que mayor volumen de tráfico registraban en función de un registro histórico y mediciones propias realizadas a lo largo de una semana. Las dependencias seleccionadas tenían un enlace con ancho de banda de 1 Gbps cada una, con  velocidades promedio consideradas como la suma entre entrada y salida, entre 11,95 y 47,24 Mbps respectivamente; con picos poco frecuentes de 300 Mbps de tráfico, que no se contemplaron en los requisitos de hardware, por lo tanto habrá una posible pérdida de paquetes en estos casos. Se realizó un “port mirroring” de los puertos del switch capa 3 a los que están conectados estas dependencias y se los conecto con los respectivos enlaces de monitoreo de sendos nodos Forward de Security Onion. \par
-            Los gráficos a continuación muestran el volumen del tráfico medido en dos periodos de tiempo distintos: Durante un día (exceptuando las horas en las que la actividad era mínima) y a lo largo de una semana. Si bien estos registros que se presentan a continuación corresponden a una sola de las dependencias, la restante tenía un comportamiento análogo. \par
-            
-            \begin{figure}[H]
-                \centering
-                \includegraphics[width=0.7\textwidth]{./iteracion_2_imagenes/figura_35_trafico_dia.png}
-                \caption{Tráfico correspondiente a una dependencia, medido durante un día, obviando las horas donde este es casi nulo}
-                \label{fig:figura_35_trafico_dia}
-            \end{figure}
-            \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_2_imagenes/figura_36_trafico_semana.png}
-            \caption{Tráfico medido durante el periodo correspondiente a una semana}
-            \label{fig:figura_36_trafico_semana}
-            \end{figure}
-        \end{subsection}
-    \end{section}
-    
-    \begin{section}{Configuración inicial del sistema base}
-        Es posible instalar Security Onion en su versión 16.04 de dos maneras, sea mediante una ISO provista por los desarrolladores o bien mediante una serie de paquetes en una distribución Ubuntu \cite{ubuntu}. En este último caso será necesario contar con la distribución Ubuntu en su versión 16.04, ya que las distribuciones de Security Onion siguen a las distribuciones respectivas de Ubuntu; esto fue cierto hasta el año 2020 cuando se lanzaron nuevas versiones de Security Onion con soporte a otras distribuciones Linux: CentOS 7 y Ubuntu 18.04 y 20.04 aunque en el futuro se podrá desplegar en otros tipos de sistema Linux ya que desde la versión 2.x en adelante, el sistema se despliega en contenedores.
-
-        \begin{subsection}{Instalación y configuración de Security Onion}
-        Como se mencionó en la sección anterior, existen dos maneras de instalar Security Onion: a partir de una imagen ISO o mediante paquetes / contenedores. Se eligió para este proyecto la segunda opción, el despliegue mediante paquetes de la distribución 16.04 de Security Onion ya que al momento del desarrollo de este trabajo integrador era la versión estable del sistema. Por consiguiente, se dispuso de un sistema operativo Ubuntu Server 16.04 con la particularidad de tener dos discos montados: el principal para el sistema operativo y el secundario para los datos recolectados en un directorio /nsm: índices en el caso de un servidor Master y capturas de paquetes o logs en el caso de un nodo Forward. Luego de finalizada la instalación de Security Onion, es necesario elegir el rol (Master o Forward) del nodo mediante el asistente y posteriormente realizar la configuración del mismo. Para esto último, se cuenta con la guia del asistente integrado que permite elegir y configurar las interfaces disponibles (observación o administración); en el caso de un nodo Forward, elegir el motor IDS (Snort o Suricata). El último paso consiste en elegir entre dos tipos de modo de funcionamiento: Producción o Evaluación.
-         \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_2_imagenes/figura_37_sonion_conf.png}
-            \caption{Asistente de instalación de Security Onion 16.04}
-            \label{fig:figura_37_sonion_conf}
-        \end{figure}
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_2_imagenes/figura_38_sonion_modo.png}
-            \caption{El asistente de instalación permite elegir el modo de despliegue}
-            \label{fig:figura_38_sonion_modo}
-        \end{figure}
-        Con el objetivo de cumplir uno de los requerimientos no funcionales del proyecto, que implica la automatización del despliegue (instalación y configuración) del sistema, se utilizó una herramienta de administración automatizada de servidores llamada Ansible en su versión 2.8.4 para la cual se desarrollaron scripts YAML conteniendo la secuencia de instalación de los paquetes, configuraciones, rol del nodo (Forward o Master) y librerías requeridas para el apropiado funcionamiento del sistema
-        \end{subsection}
-        \begin{subsection}{Instalación y configuración de TheHive - Cortex}
-        Para la instalación del gestor de incidentes, que tiene como componentes a  TheHive y Cortex, se utilizó  el sistema operativo Debian 10. En primer lugar se instaló TheHive, para ello fue necesario realizar la instalación previa de los componentes necesarios como las librerías de Java, Python y Elasticsearch; este último requirió una configuración en su archivo elasticsearch.yaml:
-        
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_2_imagenes/figura_39_thehive_conf_elastic.png}
-            \caption{Configuración añadida a elasticsearch.yaml para la instalación de TheHive}
-            \label{fig:figura_39_thehive_conf}
-        \end{figure}
-        Finalmente, los últimos pasos para la instalación de TheHive consisten en habilitar e iniciar el servicio de elasticsearch, agregar el repositorio que contiene los paquetes de TheHive, instalarlo y luego habilitar el servicio para poder iniciarlo. \par
-        En cuanto a Cortex, el proceso es similar al anteriormente descrito para TheHive, donde una vez descargados e instalados los paquetes de Cortex con su correspondiente secuencia de habilitación e inicio; se procedió a descargar del repositorio los responders y analyzers respectivos. Por último, se modifica el archivo de configuración de Cortex para indicar la ubicación del directorio que contiene los responders y analyzers mencionados anteriormente. \par
-        Posteriormente se actualizó la base de datos elasticsearch mediante la GUI web de Cortex, se creó un superusuario y luego las organizaciones donde se administrarán usuarios comunes y analyzers; es necesario crear un usuario con el rol de administrador de organizaciones. Las organizaciones tendrán habilitados y configurados determinados responders y analyzers según sea necesario. \par
-        El último paso del proceso consiste en comunicar TheHive y Cortex entre sí. Para ello se genera una API key en Cortex que será usada como parte de las modificaciones necesarias al archivo application.conf de TheHive. Las modificaciones completas que se realizaron al mencionado archivo se pueden apreciar en la Figura \ref{fig:figura_40_thehive_cortex_conf}:\par
-        
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_2_imagenes/figura_40_thehive_cortex_conf.png}
-            \caption{Modificación al archivo application.conf de TheHive para la comunicación con Cortex}
-            \label{fig:figura_40_thehive_cortex_conf}
-        \end{figure}
-        \end{subsection}
-        
-    \end{section}
+   \end{section}
+   \pagebreak
+   \begin{subsection}{Logstash}
+        Logstash es una tubería (en adelante “pipeline”) de procesamiento de datos gratuito y abierto del lado del servidor que ingesta datos de una multitud de fuentes, los transforma y luego los envía a su destino. Las fuentes de entrada admitidas por logstash son extremadamente amplias, como por ejemplo: syslog, STDIN, TCP, UDP, SNMP, IMAP, entre otras. Posteriormente, Logstash toma los datos sin estructura y los normaliza para crear conjunto ordenado mediante la identificación y conversión de la información a un formato común. Para realizar la tarea anterior, dispone de una gran variedad de filtros que facilitan el procesamiento general, independientemente de la fuente de datos. En este proyecto se utilizó a grok \cite{grok} como filtro de las fuentes de información. Con los datos ya normalizados, es posible darles un formato específico para un destino en particular, ya que Logstash admite múltiples destinos para la etapa final del pipeline; desde una base de datos, archivos finales o servicios web. Security Onion, por defecto, almacena estos datos normalizados en un formato JSON en la misma pila Elastic, es decir la base de datos Elasticsearch.
+   \end{subsection}
    
-   \begin{section}{Configuración de acciones automáticas}
-        El mecanismo elegido para automatizar las acciones fue mediante webhooks, para ello fue necesario implementar un entorno de virtualización en el mismo servidor donde se encuentran alojados TheHive y Cortex. Para ello se optó por utilizar el módulo de python “venv”, lo que requirió la instalación de Python 3.6 como primer paso. En segundo lugar se modificó el archivo application.conf de TheHive que se mencionó en la sección anterior para permitir la comunicación con el puerto  del entorno de virtualización. En tercer lugar se verificó que en el nodo Master de Security Onion las reglas de ElastAlert tengan los campos necesarios configurados como observables ya que estos serán necesarios posteriormente dado que en TheHive están creados los observables que esperan esta información (source\_ip, destination\_ip, source\_port, destination\_port, alert, classification, category, etc). \par
-        Satisfechos los pasos anteriores, la instalación siguió los siguientes pasos:
-        \begin{itemize}
-            \item Se creo una carpeta con el nombre webhooksenv
-            \item Un entorno virtual fue creado y activado en la mencionada carpeta
-            \item Se procedió a instalar las librerias necesarias: Flask, Gunicorn, Wheel, Request y Netaddr.
-            \item Se desactivo el entorno virtual y se habilitó en el firewall el puerto 5000.
-            \item Se agregaron y modificaron valores al archivo de parámetros que utiliza webhooks.
-            \item Se inició y comprobó el estado del servicio.
-        \end{itemize}
-        Finalmente, se modificaron los archivos de configuración de TheHive y Cortex para actualizar la información necesaria referida a los webhooks.
+   \begin{subsection}{Elasticsearch}
+        Elasticsearch es una base de datos del tipo NoSQL distribuida y orientada al almacenamiento de documentos. Los datos normalizados provenientes de Logstash son documentos almacenados en índices en Elasticsearch. Cada índice está compuesto por uno o más shards (fragmento), por lo tanto un shard es un subconjunto de documentos, siendo el elemento básico de Elasticsearch y el que permite la escalabilidad del mismo. Un shard es también una instancia de un “índice de Lucene \cite{lucene}", que indexa y almacena un documento en un segmento. Lucene es una librería desarrollada en Java para hacer búsquedas en una base de datos, constituyéndose en un motor de búsqueda que indexa y administra consultas en un conjunto de segmentos. La Figura \ref{fig:figura_21_arq_alm_elasticsearch} muestra la arquitectura de alto nivel del almacenamiento en Elasticsearch.
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_21_arq_alm_elasticsearch.png}
+            \caption{Arquitectura de almacenamiento en Elasticsearch}
+            \label{fig:figura_21_arq_alm_elasticsearch}
+        \end{figure}
+    \end{subsection}
+    \pagebreak
+    \begin{subsection}{Kibana}
+     Todos los datos almacenados en Elasticsearch pueden ser visualizados por Kibana, una interfaz gráfica perteneciente a la pila Elastic. Kibana permite visualizar los datos en gráficos circulares, de barras, histogramas, etc e interactuar con ellos; también es posible realizar análisis de ubicación cuando se disponen de los metadatos correspondientes mediante el complemento Elastic Maps, realizar análisis de series temporales de una manera rápida y sencilla, dispone de herramientas de inteligencia artificial, que mediante aprendizaje no supervisado permite detectar anomalías y patrones mediante las proyecciones sobre los datos. \par
+     Otra de sus características es  la posibilidad de realizar gráficos de correlación y entrecruzamiento, seleccionando campos de interés y filtros lógicos creados por el usuario. Es de destacar que para algunas de estas características es necesario la instalación de plugins complementarios y aunque en su inmensa mayoría son gratuitos, algunos pueden ser pagos ya que utilizan servicios web de la nube de los desarrolladores. 
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_22_capt_kibana.png}
+        \caption{Captura de pantalla de Kibana\cite{elastic}}
+        \label{fig:captura_kibana}
+        \end{figure}
+   \end{subsection}
+   \begin{section}{Elastic, ElastAlert, TheHive y Cortex}
+        Security Onion incluye la pila Elastic, cuyos componentes son la base de datos Elasticsearch, Logstash quien se encarga de recibir, procesar, normalizar y agregar los datos resultantes a la base de datos; estos datos son visibles mediante Kibana. El proceso comienza cuando Logstash recibe los datos sin procesar provenientes de múltiples fuentes, son normalizados por este componente y enviados a Elasticsearch para su almacenamiento. Kibana permite consultar la base de datos mediante una interfaz gráfica de usuario y utilizar esa información para propósitos de análisis de amenazas. \par
+        ElastAlert es un framework que permite identificar y alertar sobre eventos anómalos o patrones de interés sobre los datos de Elasticsearch. También provee múltiples mecanismos para enviar alertas mediante distintas plataformas externas, tales como Slack \cite{slack}, correo electrónico, JIRA \cite{jira}, Telegram \cite{telegram} y muchos más. Tanto ElastAlert como los componentes de la pila Elastic están desplegados sobre contenedores Docker \cite{docker}. \par
+        Es destacable que, aunque Security Onion cubre gran parte de los requerimientos de un SIEM, no posee los elementos que permiten completar un sistema de manejo y respuesta a incidentes; por esta razón y luego de una investigación sobre las alternativas posibles, se incluyó a TheHive \cite{thehive} y Cortex \cite{thehive} como complemento de Security Onion. TheHive permite la gestión de incidentes de manera detallada y la colaboración con otros CSIRT mediante el uso compartido de información sobre incidentes en tiempo real; mientras que Cortex hace posible la automatización de las respuestas y operaciones ante incidentes utilizando los datos enviados por TheHive. \par
 
    \end{section}
+   \begin{section}{Analizando y clasificando eventos: ElastAlert}
+     A pesar de que Kibana permite consultar los datos almacenados en Elasticsearch y presentarlos de diversas maneras que resultan en una gran utilidad, carece de la capacidad de generar alertas cuando los datos coinciden con algun patron, especialmente cuando estos datos son escritos y consultados en tiempo real en la base de datos. Con este objetivo, la plataforma integra a ElastAlert, siendo un componente confiable, modular y simple de configurar. Su funcionamiento se basa en dos componentes principales: reglas y alertas; las primeras son utilizadas para comparar con los datos resultantes de las consultas que se hacen en forma constante a Elasticsearch, esta comparación consiste en hallar patrones o firmas definidas en las reglas dentro de los datos obtenidos de la consulta; si el resultado de la búsqueda es positivo, una alerta es disparada para notificar el evento. \par
+     Las alertas consisten en mensajes que permiten notificar a otro sistema con el objetivo de que este último realice una acción sobre las causas del evento que detectó la regla o bien informar a los analistas y/o responsables definidos. En cualquiera de los dos casos, las alertas pueden incluir toda la información recabada en un formato definido, tales como plantillas o cualquier arreglo configurado a tal fin. \par
+     Según la naturaleza de los eventos a clasificar, las reglas cuentan con un conjunto común de paradigmas de monitoreo, estos permiten identificar y generar alertas aprovechando las características de las anomalías al mismo tiempo que optimizan los recursos del resto del CSIRT en términos de hardware y atención de los analistas. Algunos de estos paradigmas se basan en el comportamiento, tales como la frecuencia que consiste en generar una alerta cuando se detectan N cantidad de eventos en un intervalo definido, el cambio de tasas de ocurrencia por arriba o abajo de un límite establecido como normal para un determinado tipo de eventos, cuando en los datos se encuentran presente campos que han sido previamente establecidos como parte de una lista blanca, negra u algún campo cuyo valor coincida con otros tipos de filtros, entre otros. Es posible definir y configurar tantas reglas como alertas sean necesarias. \par
+
+   \end{section}
+   \pagebreak
+   \begin{section}{El panel de control general: TheHive y Cortex}
+     Como se mencionó en las secciones anteriores, Security Onion requiere de otros elementos capaces de realizar la gestión integral de incidentes y sus respuestas, elementos que sean capaces de condensar y presentar información a los analistas del CSIRT encargados de monitorear y responder a las anomalías e incidentes detectados.  TheHive es la herramienta que se eligió para esta tarea ya que es una plataforma de respuesta a incidentes de seguridad gratuita y de código abierto, cumpliendo así con uno de los requerimientos no funcionales del proyecto, referido al tipo de licencia y accesibilidad al código. Otra de las razones para la elección de esta plataforma en particular ha sido su escalabilidad y su integración con MISP, lo que permite compartir información sobre las amenazas detectadas con otros CSIRT de organizaciones aliadas. Las tres capacidades centrales son la elaboración de casos, la respuesta a estos y la anteriormente mencionada colaboración con otros CSIRT.\par
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_23_alerta_panel_thehive.png}
+        \caption{ Alertas recibidas en el panel de TheHive\cite{thehive}}
+        \label{fig:alerta_panel_thehive}
+     \end{figure}
+        \FloatBarrier
+        En cuanto a la elaboración de casos y tareas asociadas, estas se crean en base a las alertas recibidas \ref{fig:figura_21_arq_alm_elasticsearch}, donde el primer paso consiste en la creación de un caso para luego asociar este a una o varias de las alertas presentes utilizando la plantilla disponible \ref{fig:captura_kibana}, posteriormente es posible agregar tareas asociadas al caso, las cuales se pueden asignar a distintos analistas; a continuación es posible sumar métricas y campos personalizados, reducir el tiempo de búsqueda y recopilación de datos así como automatizar algunas tareas de recopilación de antecedentes en el manejo de incidentes mediante el uso del tablero (dashboard) dinámico, tal como se observa en la \ref{fig:alerta_panel_thehive}. En el proceso de creación del caso, thehive permite agregar cualquier otra información que se considere relevante, como etiquetas, archivos sospechosos de contener malware, etc a modo de evidencias.
+        \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_24_plantilla_creacion_casos.png}
+        \caption{Plantilla para la creación de nuevos casos}
+        \label{fig:figura_24_plantilla_nuevos_casos}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_25_dashboard_dinamico_thehive.png}
+        \caption{Dashboard dinámico de TheHive}
+        \label{fig:dashboard_dinamico}
+     \end{figure}
+     \FloatBarrier
+     Luego de la creación de un caso, es posible sumarle todos los “observables” que sean necesarios, donde los observables son todos aquellos campos que se pueden agregar de forma manual y que constituyen fuentes de información para analizar cada caso. Una vez configurado un caso, estos son examinados por scripts llamados “analyzers” que correlacionan y filtran los datos del caso contra los provistos por otras instancias MIPS u otras fuentes de información como la propia base de datos local, servicios de resolución DNS, plataformas como Shodan\cite{shodan}, VirusTotal\cite{virustotal}, Google Cloud Visión\cite{vision-AI}, entre muchas otras. Los observables también se pueden obtener por datos de las alertas recibidas, los cuales son previamente configurados en ElastAlert. Como se mencionó anteriormente ElastAlert realiza consultas a Elasticsearch y con los resultados busca patrones de interés para realizar una notificación, obtenida esta última extrae datos que se consideran de interés para ser enviados a The Hive. Un ejemplo de esto puede ser un número de IP, tipo de protocolo, fecha que se generó el log, puerto de origen y/o destino. La alerta que llega a The Hive contiene todos estos datos, considerados observables. \par
+     Luego de que el caso fue creado o sobre la misma alerta, el analista puede dar curso a una respuesta mediante “responders” que son scripts en los cuales se encuentra la respuesta del CSIRT a la amenaza. Tanto los responders como los analyzers se encuentran bajo la responsabilidad de Cortex, el subsistema encargado de procesar los casos de TheHive. Al final de esta sección, se presentan los diagramas de casos de uso correspondientes a TheHive y Cortex.
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_26_analyzers_disponibles.png}
+        \caption{Algunos de los analyzers disponibles en Cortex}
+        \label{fig:analizers_disponibles}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_27_responders_cortex.png}
+        \caption{Ejemplos de responders utilizables en Cortex}
+        \label{fig:ejemplos_responders_cortex}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_28_thehive_user_conf.png}
+        \caption{Casos de uso de gestión de usuario y configuraciones de TheHive}
+        \label{fig:caso_de_uso_gestion_usuario_conf_thehive}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_29_thehive_alertas_casos.png}
+        \caption{Diagrama de casos de uso de alertas y casos}
+        \label{fig:caso_de_uso_alertas_casos}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_30_cortex_user_conf.png}
+        \caption{Casos de uso de gestión de usuario y configuraciones de Cortex}
+        \label{fig:caso_de_uso_gestion_usuarios_configuraciones_cortex}
+     \end{figure}
+     \begin{figure}[H]
+      \centering
+      \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_31_cortex_tablero.png}
+        \caption{Casos de uso del tablero de Cortex}
+        \label{fig:caso_de_uso_tablero_cortex}
+     \end{figure}
+     
+     
+   \end{section}
+
+   \begin{section}{Integración con los sistemas de detección}
+        En secciones anteriores se mencionó que Security Onion cuenta con componentes para realizar tanto monitoreo de red (NIDS) como monitoreo de puntos finales (HIDS). Durante la configuración inicial del sistema se pueden especificar los NIDS a utilizar, para una configuración rápida de los sensores. Esto permite realizar una primera integración con el hardware disponible
+   \end{section}
+   \pagebreak
+   \begin{subsection}{Suricata, Snort y Ossec}
+        Suricata y Snort son motores de detección de amenazas en el tráfico de red. Ambos NIDS se basan en firmas o reglas para realizar la detección de amenazas, estas firmas son actualizadas constantemente conforme a la aparición de nuevos tipos de ataques, exploits y malware. Si bien estos NIDS son gratuitos y de código abierto Snort ofrece la versión paga, la cual cuenta con soporte para descargar las firmas actualizadas a la fecha. Por defecto Snort cuenta con las reglas básicas para la detección de amenazas bien conocidas. \par
+    	Suricata, por otro lado, es desarrollado y mantenido por los colaboradores de la OISF, los cuales también dan soporte a las firmas ya que se actualizan las existentes y se agregan nuevas en forma permanente. Estas actualizaciones en las reglas son descargadas periódicamente mediante PulledPork, una utilidad que también es usada por Snort cuyo fin es descargar reglas y firmas desde distintos centros de investigación reconocidos en todo el mundo, como el SANS institute, Emerging Threats, entre otros. \par
+        En el Cuadro \ref{table:4} se muestran las diferencias entre Snort y Suricata en una tabla comparativa. 
+        
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{10em}|m{11em}|m{11em}|}
+        
+            \hline 
+                Caracteristicas  & Snort &  Suricata \\ 
+            \hline
+                Desarrollador & CISCO & Open Information Security Foundation (OISF)  \\ 
+            \hline
+                Lanzamiento  & 1998 & 2009 \\ 
+            \hline
+                Lenguaje del código & C  & C  \\
+            \hline
+                Sistema operativo & Linux, Windows y Mac OS X  & Linux, Windows y Mac OS X  \\
+            \hline
+                Hilos & Monohilo  & Soporte múltiples hilos  \\
+            \hline
+                Soporte IPv6 & Si  & Si  \\
+            \hline
+                Reglas de Snort & Si  & Si \\
+            \hline
+                Reglas de Emerging Threats & Si  & Si \\
+            \hline
+                Formato de logs & unified2  & unified2   \\
+            \hline
+                Compatible con Aanval & Si  & Si   \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Comparación entre Snort y Suricata}
+        \label{table:4}
+    \end{table}
+        
+   \end{subsection}
