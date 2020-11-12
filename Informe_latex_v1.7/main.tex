@@ -1,0 +1,69 @@
+\documentclass[12pt,twoside]{report}
+\usepackage[utf8]{inputenc}
+%Para qué los títulos aparezcan en español
+\usepackage[spanish]{babel}
+\usepackage{csquotes}
+\usepackage{array} % para hacer tablas
+\usepackage{graphicx} % gráficos
+\usepackage{float} % posiciona las imágenes
+\usepackage{blindtext}
+\usepackage{caption}
+\usepackage{placeins}
+\usepackage{subfig}
+\usepackage[export]{adjustbox}
+\raggedbottom
+
+\usepackage[
+backend=biber,
+sorting=none
+]{biblatex} %se puede especificar otra forma de imprimir las citaciones aca
+\addbibresource{referencias.bib}
+
+%Margenes según normas APA
+\usepackage[a4paper,top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+% Links a todo el documento y urls
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=black,
+    citecolor=black,
+    pdftitle={Sharelatex Example},
+    %bookmarks=true,
+    pdfpagemode=FullScreen,
+}
+
+\begin{document}
+
+    \input{Caratula.tex}
+    \input{Resumen.tex}
+    % Índice general
+    \tableofcontents
+    % Índice de figuras
+    \listoffigures
+    % Índice de tablas
+    \listoftables
+    % Agradecimientos
+    \input{Agradecimientos.tex}
+    % Glosario
+    \input{Glosario.tex}
+    % A partir de acá comienza la numeración de los capítulos
+    \input{1_Introduccion.tex}
+    \input{2_Marco_Teorico.tex}
+    \input{3_Descripcion_de_Requerimientos.tex}
+    \input{4_Iteracion_1.tex}
+    \input{5_Iteracion_2.tex}
+    \input{6_Iteracion_3.tex}
+    \input{7_Iteracion_4.tex}
+    \input{8_Iteracion_5.tex}
+    \input{9_Conclusion.tex}
+    \input{10_Futuros_trabajos.tex}
+    
+    % Bibliografía 
+    \printbibliography
+    \input{11_Anexos.tex}
+    
+
+\end{document}

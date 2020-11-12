@@ -1,0 +1,158 @@
+\chapter{Iteración 2: “Componentes de la solución”}
+\begin{section}{Recibiendo, procesando y visualizando eventos: La pila Elastic}
+   En la Figura \ref{fig:figura_20_conexion_comp_elastic} se observa, que luego de recolectar los datos provenientes de múltiples fuentes, es necesario normalizarlos y agregarlos a la base de datos; estas tareas son llevadas a cabo por los componentes de la pila Elastic, en este caso Logstash y Elasticsearch, respectivamente. 
+
+   \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./iteracion_1_imagenes/figura_20_conexion_comp_elastic.png}
+        \caption{Conexión de componentes Elastic}
+        \label{fig:figura_20_conexion_comp_elastic}
+    \end{figure}
+        
+   \end{section}
+   \pagebreak
+   \begin{subsection}{Logstash}
+        Logstash es una tubería (en adelante “pipeline”) de procesamiento de datos gratuito y abierto del lado del servidor que ingesta datos de una multitud de fuentes, los transforma y luego los envía a su destino. Las fuentes de entrada admitidas por logstash son extremadamente amplias, como por ejemplo: syslog, STDIN, TCP, UDP, SNMP, IMAP, entre otras. Posteriormente, Logstash toma los datos sin estructura y los normaliza para crear conjunto ordenado mediante la identificación y conversión de la información a un formato común. Para realizar la tarea anterior, dispone de una gran variedad de filtros que facilitan el procesamiento general, independientemente de la fuente de datos. En este proyecto se utilizó a grok \cite{grok} como filtro de las fuentes de información. Con los datos ya normalizados, es posible darles un formato específico para un destino en particular, ya que Logstash admite múltiples destinos para la etapa final del pipeline; desde una base de datos, archivos finales o servicios web. Security Onion, por defecto, almacena estos datos normalizados en un formato JSON en la misma pila Elastic, es decir la base de datos Elasticsearch.
+   \end{subsection}
+   
+   \begin{subsection}{Elasticsearch}
+        Elasticsearch es una base de datos del tipo NoSQL distribuida y orientada al almacenamiento de documentos. Los datos normalizados provenientes de Logstash son documentos almacenados en índices en Elasticsearch. Cada índice está compuesto por uno o más shards (fragmento), por lo tanto un shard es un subconjunto de documentos, siendo el elemento básico de Elasticsearch y el que permite la escalabilidad del mismo. Un shard es también una instancia de un “índice de Lucene \cite{lucene}", que indexa y almacena un documento en un segmento. Lucene es una librería desarrollada en Java para hacer búsquedas en una base de datos, constituyéndose en un motor de búsqueda que indexa y administra consultas en un conjunto de segmentos. La Figura \ref{fig:figura_21_arq_alm_elasticsearch} muestra la arquitectura de alto nivel del almacenamiento en Elasticsearch.
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_21_arq_alm_elasticsearch.png}
+            \caption{Arquitectura de almacenamiento en Elasticsearch}
+            \label{fig:figura_21_arq_alm_elasticsearch}
+        \end{figure}
+    \end{subsection}
+    \pagebreak
+    \begin{subsection}{Kibana}
+     Todos los datos almacenados en Elasticsearch pueden ser visualizados por Kibana, una interfaz gráfica perteneciente a la pila Elastic. Kibana permite visualizar los datos en gráficos circulares, de barras, histogramas, etc e interactuar con ellos; también es posible realizar análisis de ubicación cuando se disponen de los metadatos correspondientes mediante el complemento Elastic Maps, realizar análisis de series temporales de una manera rápida y sencilla, dispone de herramientas de inteligencia artificial, que mediante aprendizaje no supervisado permite detectar anomalías y patrones mediante las proyecciones sobre los datos. \par
+     Otra de sus características es  la posibilidad de realizar gráficos de correlación y entrecruzamiento, seleccionando campos de interés y filtros lógicos creados por el usuario. Es de destacar que para algunas de estas características es necesario la instalación de plugins complementarios y aunque en su inmensa mayoría son gratuitos, algunos pueden ser pagos ya que utilizan servicios web de la nube de los desarrolladores. 
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_22_capt_kibana.png}
+        \caption{Captura de pantalla de Kibana\cite{elastic}}
+        \label{fig:captura_kibana}
+        \end{figure}
+   \end{subsection}
+   \begin{section}{Elastic, ElastAlert, TheHive y Cortex}
+        Security Onion incluye la pila Elastic, cuyos componentes son la base de datos Elasticsearch, Logstash quien se encarga de recibir, procesar, normalizar y agregar los datos resultantes a la base de datos; estos datos son visibles mediante Kibana. El proceso comienza cuando Logstash recibe los datos sin procesar provenientes de múltiples fuentes, son normalizados por este componente y enviados a Elasticsearch para su almacenamiento. Kibana permite consultar la base de datos mediante una interfaz gráfica de usuario y utilizar esa información para propósitos de análisis de amenazas. \par
+        ElastAlert es un framework que permite identificar y alertar sobre eventos anómalos o patrones de interés sobre los datos de Elasticsearch. También provee múltiples mecanismos para enviar alertas mediante distintas plataformas externas, tales como Slack \cite{slack}, correo electrónico, JIRA \cite{jira}, Telegram \cite{telegram} y muchos más. Tanto ElastAlert como los componentes de la pila Elastic están desplegados sobre contenedores Docker \cite{docker}. \par
+        Es destacable que, aunque Security Onion cubre gran parte de los requerimientos de un SIEM, no posee los elementos que permiten completar un sistema de manejo y respuesta a incidentes; por esta razón y luego de una investigación sobre las alternativas posibles, se incluyó a TheHive \cite{thehive} y Cortex \cite{thehive} como complemento de Security Onion. TheHive permite la gestión de incidentes de manera detallada y la colaboración con otros CSIRT mediante el uso compartido de información sobre incidentes en tiempo real; mientras que Cortex hace posible la automatización de las respuestas y operaciones ante incidentes utilizando los datos enviados por TheHive. \par
+
+   \end{section}
+   \begin{section}{Analizando y clasificando eventos: ElastAlert}
+     A pesar de que Kibana permite consultar los datos almacenados en Elasticsearch y presentarlos de diversas maneras que resultan en una gran utilidad, carece de la capacidad de generar alertas cuando los datos coinciden con algun patron, especialmente cuando estos datos son escritos y consultados en tiempo real en la base de datos. Con este objetivo, la plataforma integra a ElastAlert, siendo un componente confiable, modular y simple de configurar. Su funcionamiento se basa en dos componentes principales: reglas y alertas; las primeras son utilizadas para comparar con los datos resultantes de las consultas que se hacen en forma constante a Elasticsearch, esta comparación consiste en hallar patrones o firmas definidas en las reglas dentro de los datos obtenidos de la consulta; si el resultado de la búsqueda es positivo, una alerta es disparada para notificar el evento. \par
+     Las alertas consisten en mensajes que permiten notificar a otro sistema con el objetivo de que este último realice una acción sobre las causas del evento que detectó la regla o bien informar a los analistas y/o responsables definidos. En cualquiera de los dos casos, las alertas pueden incluir toda la información recabada en un formato definido, tales como plantillas o cualquier arreglo configurado a tal fin. \par
+     Según la naturaleza de los eventos a clasificar, las reglas cuentan con un conjunto común de paradigmas de monitoreo, estos permiten identificar y generar alertas aprovechando las características de las anomalías al mismo tiempo que optimizan los recursos del resto del CSIRT en términos de hardware y atención de los analistas. Algunos de estos paradigmas se basan en el comportamiento, tales como la frecuencia que consiste en generar una alerta cuando se detectan N cantidad de eventos en un intervalo definido, el cambio de tasas de ocurrencia por arriba o abajo de un límite establecido como normal para un determinado tipo de eventos, cuando en los datos se encuentran presente campos que han sido previamente establecidos como parte de una lista blanca, negra u algún campo cuyo valor coincida con otros tipos de filtros, entre otros. Es posible definir y configurar tantas reglas como alertas sean necesarias. \par
+
+   \end{section}
+   \pagebreak
+   \begin{section}{El panel de control general: TheHive y Cortex}
+     Como se mencionó en las secciones anteriores, Security Onion requiere de otros elementos capaces de realizar la gestión integral de incidentes y sus respuestas, elementos que sean capaces de condensar y presentar información a los analistas del CSIRT encargados de monitorear y responder a las anomalías e incidentes detectados.  TheHive es la herramienta que se eligió para esta tarea ya que es una plataforma de respuesta a incidentes de seguridad gratuita y de código abierto, cumpliendo así con uno de los requerimientos no funcionales del proyecto, referido al tipo de licencia y accesibilidad al código. Otra de las razones para la elección de esta plataforma en particular ha sido su escalabilidad y su integración con MISP, lo que permite compartir información sobre las amenazas detectadas con otros CSIRT de organizaciones aliadas. Las tres capacidades centrales son la elaboración de casos, la respuesta a estos y la anteriormente mencionada colaboración con otros CSIRT.\par
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_23_alerta_panel_thehive.png}
+        \caption{ Alertas recibidas en el panel de TheHive\cite{thehive}}
+        \label{fig:alerta_panel_thehive}
+     \end{figure}
+        \FloatBarrier
+        En cuanto a la elaboración de casos y tareas asociadas, estas se crean en base a las alertas recibidas \ref{fig:figura_21_arq_alm_elasticsearch}, donde el primer paso consiste en la creación de un caso para luego asociar este a una o varias de las alertas presentes utilizando la plantilla disponible \ref{fig:captura_kibana}, posteriormente es posible agregar tareas asociadas al caso, las cuales se pueden asignar a distintos analistas; a continuación es posible sumar métricas y campos personalizados, reducir el tiempo de búsqueda y recopilación de datos así como automatizar algunas tareas de recopilación de antecedentes en el manejo de incidentes mediante el uso del tablero (dashboard) dinámico, tal como se observa en la \ref{fig:alerta_panel_thehive}. En el proceso de creación del caso, thehive permite agregar cualquier otra información que se considere relevante, como etiquetas, archivos sospechosos de contener malware, etc a modo de evidencias.
+        \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_24_plantilla_creacion_casos.png}
+        \caption{Plantilla para la creación de nuevos casos}
+        \label{fig:figura_24_plantilla_nuevos_casos}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_25_dashboard_dinamico_thehive.png}
+        \caption{Dashboard dinámico de TheHive}
+        \label{fig:dashboard_dinamico}
+     \end{figure}
+     \FloatBarrier
+     Luego de la creación de un caso, es posible sumarle todos los “observables” que sean necesarios, donde los observables son todos aquellos campos que se pueden agregar de forma manual y que constituyen fuentes de información para analizar cada caso. Una vez configurado un caso, estos son examinados por scripts llamados “analyzers” que correlacionan y filtran los datos del caso contra los provistos por otras instancias MIPS u otras fuentes de información como la propia base de datos local, servicios de resolución DNS, plataformas como Shodan\cite{shodan}, VirusTotal\cite{virustotal}, Google Cloud Visión\cite{vision-AI}, entre muchas otras. Los observables también se pueden obtener por datos de las alertas recibidas, los cuales son previamente configurados en ElastAlert. Como se mencionó anteriormente ElastAlert realiza consultas a Elasticsearch y con los resultados busca patrones de interés para realizar una notificación, obtenida esta última extrae datos que se consideran de interés para ser enviados a The Hive. Un ejemplo de esto puede ser un número de IP, tipo de protocolo, fecha que se generó el log, puerto de origen y/o destino. La alerta que llega a The Hive contiene todos estos datos, considerados observables. \par
+     Luego de que el caso fue creado o sobre la misma alerta, el analista puede dar curso a una respuesta mediante “responders” que son scripts en los cuales se encuentra la respuesta del CSIRT a la amenaza. Tanto los responders como los analyzers se encuentran bajo la responsabilidad de Cortex, el subsistema encargado de procesar los casos de TheHive. Al final de esta sección, se presentan los diagramas de casos de uso correspondientes a TheHive y Cortex.
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_26_analyzers_disponibles.png}
+        \caption{Algunos de los analyzers disponibles en Cortex}
+        \label{fig:analizers_disponibles}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_27_responders_cortex.png}
+        \caption{Ejemplos de responders utilizables en Cortex}
+        \label{fig:ejemplos_responders_cortex}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_28_thehive_user_conf.png}
+        \caption{Casos de uso de gestión de usuario y configuraciones de TheHive}
+        \label{fig:caso_de_uso_gestion_usuario_conf_thehive}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_29_thehive_alertas_casos.png}
+        \caption{Diagrama de casos de uso de alertas y casos}
+        \label{fig:caso_de_uso_alertas_casos}
+     \end{figure}
+     \begin{figure}[H]
+        \centering
+        \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_30_cortex_user_conf.png}
+        \caption{Casos de uso de gestión de usuario y configuraciones de Cortex}
+        \label{fig:caso_de_uso_gestion_usuarios_configuraciones_cortex}
+     \end{figure}
+     \begin{figure}[H]
+      \centering
+      \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_31_cortex_tablero.png}
+        \caption{Casos de uso del tablero de Cortex}
+        \label{fig:caso_de_uso_tablero_cortex}
+     \end{figure}
+     
+     
+   \end{section}
+
+   \begin{section}{Integración con los sistemas de detección}
+        En secciones anteriores se mencionó que Security Onion cuenta con componentes para realizar tanto monitoreo de red (NIDS) como monitoreo de puntos finales (HIDS). Durante la configuración inicial del sistema se pueden especificar los NIDS a utilizar, para una configuración rápida de los sensores. Esto permite realizar una primera integración con el hardware disponible
+   \end{section}
+   \pagebreak
+   \begin{subsection}{Suricata, Snort y Ossec}
+        Suricata y Snort son motores de detección de amenazas en el tráfico de red. Ambos NIDS se basan en firmas o reglas para realizar la detección de amenazas, estas firmas son actualizadas constantemente conforme a la aparición de nuevos tipos de ataques, exploits y malware. Si bien estos NIDS son gratuitos y de código abierto Snort ofrece la versión paga, la cual cuenta con soporte para descargar las firmas actualizadas a la fecha. Por defecto Snort cuenta con las reglas básicas para la detección de amenazas bien conocidas. \par
+    	Suricata, por otro lado, es desarrollado y mantenido por los colaboradores de la OISF, los cuales también dan soporte a las firmas ya que se actualizan las existentes y se agregan nuevas en forma permanente. Estas actualizaciones en las reglas son descargadas periódicamente mediante PulledPork, una utilidad que también es usada por Snort cuyo fin es descargar reglas y firmas desde distintos centros de investigación reconocidos en todo el mundo, como el SANS institute, Emerging Threats, entre otros. \par
+        En el Cuadro \ref{table:4} se muestran las diferencias entre Snort y Suricata en una tabla comparativa. 
+        
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{10em}|m{11em}|m{11em}|}
+        
+            \hline 
+                Caracteristicas  & Snort &  Suricata \\ 
+            \hline
+                Desarrollador & CISCO & Open Information Security Foundation (OISF)  \\ 
+            \hline
+                Lanzamiento  & 1998 & 2009 \\ 
+            \hline
+                Lenguaje del código & C  & C  \\
+            \hline
+                Sistema operativo & Linux, Windows y Mac OS X  & Linux, Windows y Mac OS X  \\
+            \hline
+                Hilos & Monohilo  & Soporte múltiples hilos  \\
+            \hline
+                Soporte IPv6 & Si  & Si  \\
+            \hline
+                Reglas de Snort & Si  & Si \\
+            \hline
+                Reglas de Emerging Threats & Si  & Si \\
+            \hline
+                Formato de logs & unified2  & unified2   \\
+            \hline
+                Compatible con Aanval & Si  & Si   \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Comparación entre Snort y Suricata}
+        \label{table:4}
+    \end{table}
+        
+   \end{subsection}
