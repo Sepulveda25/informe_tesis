@@ -5,13 +5,15 @@
 \usepackage{csquotes}
 \usepackage{array} % para hacer tablas
 \usepackage{graphicx} % gráficos
-\usepackage{float} % posiciona las imágenes
+\usepackage{booktabs} %para que las tablas se vean como en los libros y revistas
+\usepackage{float} % posiciona las imágenes, tambien usamos placeins
 \usepackage{blindtext}
-\usepackage{caption}
-\usepackage{placeins}
+\usepackage{caption} %para los subtitulos de cuadros y figuras
+\usepackage{placeins} %para el posicionamiento de imágenes
 \usepackage{subfig}
 \usepackage[export]{adjustbox}
-\raggedbottom
+\usepackage{verbatim} % comentarios
+\raggedbottom  %para eliminar los espacios en blanco que deja el espaciado automatico.
 
 \usepackage[
 backend=biber,
@@ -57,13 +59,12 @@ sorting=none
     \input{5_Iteracion_2.tex}
     \input{6_Iteracion_3.tex}
     \input{7_Iteracion_4.tex}
-    \input{8_Iteracion_5.tex}
-    \input{9_Conclusion.tex}
-    \input{10_Futuros_trabajos.tex}
+    \input{8_Conclusion.tex}
+    \input{9_Futuros_trabajos.tex}
     
     % Bibliografía 
     \printbibliography
-    \input{11_Anexos.tex}
+    \input{10_Anexos.tex}
     
 
 \end{document}
