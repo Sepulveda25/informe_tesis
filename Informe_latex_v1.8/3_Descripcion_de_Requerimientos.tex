@@ -1,0 +1,256 @@
+\chapter{Descripción de Requerimientos}
+    Con el objetivo de desplegar un sistema SIEM capaz de soportar los requerimientos funcionales y no funcionales, es necesario definir el entorno en el que operará la plataforma. \par
+    Para esto se requiere, en primer lugar describir la topología de la red de la organización, es decir realizar un relevamiento de las conexiones  de la infraestructura de red interna del área central, de sus dependencias y la red entre las unidades geográficamente distribuidas si las hubiera. Debe incluirse la topología de las conexiones de salida a Internet. \par
+    %En segundo lugar será necesario inventariar los activos de la organización: se requerirá una investigación y un relevamiento de los activos con los que cuentan las infraestructuras de red y de datos a fin de clasificarlos. \par
+    Las tareas de relevamiento anteriormente descritas proporcionarán un entendimiento acabado y profundo de la situación en la que se encuentra la infraestructura. Como resultado, será posible identificar puntos críticos a tener en consideración y como consecuencia, elegir la solución que mejor se ajuste a las necesidades de la organización. \par
+
+    \begin{section}{Requerimientos funcionales del SIEM}
+    A continuación se listan los requerimientos funcionales:
+    \begin{enumerate}
+        \item Recolectar y almacenar datos de incidentes de seguridad en la infraestructura de la red corporativa.
+        \item Recolectar y almacenar información contextual y asociada a los activos vinculados  al incidente.
+        \item Visualizar las alertas en un tablero de mando. 
+        \item Implementar un sistema de envío de alertas de seguridad que notifique a los responsables de activos de información afectados.
+        \item Definir un criterio para priorizar alertas.
+        \item Implementar un sistema de correlación de alertas de seguridad.
+    \end{enumerate}
+        
+    \end{section}
+    \pagebreak
+    \begin{section}{Requerimientos no funcionales}
+    A continuación se listan los requerimientos no funcionales:
+    \begin{enumerate}
+        \item La solución propuesta debe utilizar software libre.
+        \item La solución debe ser compatible con sistemas operativos abiertos y de tipo Unix. 
+        \item La arquitectura de la solución debe ser escalable a demanda de la organización.
+        \item Se requiere un despliegue automatizado de la solución.
+    \end{enumerate}
+
+    \end{section}
+    \begin{section}{Análisis de riesgo}
+    A partir de la definición de los requerimientos, se procedió a realizar un análisis de riesgo en el que se evaluaron las distintas soluciones SIEM mencionadas en el Marco Teórico. El objetivo de esta comparación fue encontrar la solución que mejor se adaptase los requerimientos formulados. \par
+    En primer lugar, se codificaron los requerimientos funcionales y no funcionales en el Cuadro \ref{table:6}, así como las soluciones disponibles en el Cuadro \ref{table:7}. Esta codificación fue utilizada para comparar las soluciones contra los requerimientos del proyecto, para obtener una apreciación general de la viabilidad de cada solución, en términos de su potencial elección para el desarrollo del proyecto. Los Cuadros \ref{table:6} y \ref{table:7} se presentan a continuación:
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4em}|m{30em}|}
+        
+            \hline 
+                Siglas  & Requerimientos \\ 
+            \hline
+                RF1 & Recolectar y almacenar datos de incidentes de seguridad en la infraestructura de la red corporativa. \\ 
+            \hline
+                RF2  & Recolectar y almacenar información contextual y asociada a los activos vinculados al incidente. \\ 
+            \hline
+                RF3 & Visualizar las alertas en un tablero de mando. \\
+            \hline
+                RF4 & Implementar un sistema de envío de alertas de seguridad que notifique a los responsables de activos de información afectados. \\
+            \hline
+                RF5 & Definir un criterio para priorizar alertas. \\
+            \hline
+                RF6 & Implementar un sistema de correlación de alertas de seguridad.. \\
+            \hline
+                RNF1 & La solución propuesta debe utilizar software libre. \\
+            \hline
+                RNF2 & La solución debe ser compatible con sistemas operativos abiertos y de tipo Unix. \\
+            \hline
+                RNF3 & La arquitectura de la solución debe ser escalable a demanda de la organización. \\
+            \hline
+                RNF4 & Se requiere un despliegue automatizado de la solución. \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Codificación de requerimientos funcionales y no funcionales.}
+        \label{table:6}
+    \end{table}
+     %\FloatBarrier
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{6em}|m{20em}|}
+        
+            \hline 
+                Siglas  & Solución \\ 
+            \hline
+                S1 & Graylog \\ 
+            \hline
+                S2  & Elastic (ELK) Stack \\ 
+            \hline
+                S3 & AlienVault OSSIM \\
+            \hline
+                S4 & Security Onion \\
+            \hline
+                S5 & Splunk. \\
+            \hline
+                S6 & McAfee Enterprise Security Manager \\
+            \hline
+                S7 & AlienVault USM \\
+            \hline
+                S8 & QRadar SIEM \\
+            \hline
+                S9 & ManageEngine ADAudit Plus \\
+            \hline
+                S10 & LogRhythm NextGen SIEM Platform \\
+            \hline
+                S11 & LogPoint - SIEM \\
+            \hline
+                S12 & ArcSight Enterprise Security Manager (ESM) \\
+            \hline
+                S13 & InsightIDR \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Codificación de las soluciones disponibles.}
+        \label{table:7}
+    \end{table}
+     \FloatBarrier
+     
+     Posteriormente, se priorizaron los requerimientos funcionales y no funcionales. Se eligieron tres categorías: Alta, Media y Baja. A continuación se describen detalladamente estos niveles.\par
+     Los requerimientos funcionales definidos como de “Alta” prioridad son los que se consideraron que no pueden faltar en una solución SIEM, ya que son inherentes a la naturaleza del mismo. Por otro lado los requerimientos no funcionales de la misma categoría plantean una restricción que no se puede evitar. El incumplimiento de por lo menos uno de estos requerimientos, llevó a descartar la solución. \par
+     El nivel de prioridad “Media” para los requerimientos implica  que el cumplimiento de estos es deseable para hacer mejor uso de la solución, pero no impactan significativamente en el desempeño general si no son implementados.\par
+     Por último, un nivel de prioridad “Baja” implica que los requerimientos de este tipo están orientados a optimizar la solución, una vez que está ya se encuentre funcionando. Su incumplimiento no es crítico. \par 
+     La información resultante se muestra en el Cuadro \ref{table:8}.
+     \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3em}|m{28em}|m{4em}|}
+        
+            \hline 
+                Siglas & Requerimientos & Prioridad \\ 
+            \hline
+                RF1 & Recolectar y almacenar datos de incidentes de seguridad en la infraestructura de la red corporativa. & Alta \\ 
+            \hline
+                RF2  & Recolectar y almacenar información contextual y asociada a los activos vinculados al incidente. & Media\\ 
+            \hline
+                RF3 & Visualizar las alertas en un tablero de mando. & Alta\\
+            \hline
+                RF4 & Implementar un sistema de envío de alertas de seguridad que notifique a los responsables de activos de información afectados. & Media \\
+            \hline
+                RF5 & Definir un criterio para priorizar alertas. & Baja\\
+            \hline
+                RF6 & Implementar un sistema de correlación de alertas de seguridad. & Media \\
+            \hline
+                RNF1 & La solución propuesta debe utilizar software libre. & Alta\\
+            \hline
+                RNF2 & La solución debe ser compatible con sistemas operativos abiertos y de tipo Unix. & Alta \\
+            \hline
+                RNF3 & La arquitectura de la solución debe ser escalable a demanda de la organización. & Media \\
+            \hline
+                RNF4 & Se requiere un despliegue automatizado de la solución. & Baja\\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Valoración de requerimientos funcionales y no funcionales.}
+        \label{table:8}
+    \end{table}
+     \FloatBarrier
+     En el Cuadro \ref{table:9} se muestran todas las soluciones disponibles y cuales son los requerimientos que cumplen. Este cuadro fue elaborado con las codificaciones extraídas de los Cuadros \ref{table:6} y \ref{table:7}. El resultado permitió valorar la viabilidad de cada solución en términos de cumplimiento de requerimientos y contribuyó a una preselección inicial de soluciones. 
+     \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4em}|m{2em}|m{2em}|m{2em}|m{2em}|m{2em}|m{2em}|m{3em}|m{3em}|m{3em}|m{3em}|}
+        
+            \hline 
+                Solución & RF1& RF2& RF3& RF4& RF5& RF6& RNF1& RNF2& RNF3& RNF4 \\ 
+            \hline
+                S1 & Sí & Sí & Sí & Sí & Sí & Sí & Sí & Sí & Sí & Sí \\ 
+            \hline
+                S2  & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí & Sí & Sí   \\ 
+            \hline
+                S3 & Sí & No & Sí & No & No & Sí & Sí & Sí & No & Sí   \\
+            \hline
+                S4 & Sí & Sí & Sí & Sí & Sí & Sí & Sí & Sí & Sí & Sí  \\
+            \hline
+                S5 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí  \\
+            \hline
+                S6 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline
+                S7 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline
+                S8 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline
+                S9 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline
+                S10 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline
+                S11 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline
+                S12 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline
+                S13 & Sí & Sí & Sí & Sí & Sí & Sí & No & Sí & Sí & Sí \\
+            \hline %linea final de tabla
+        \end{tabular}
+        %CENTRAR EL NOMBRE DE ESTE CUADRO 
+        \caption{Comparación entre las soluciones disponibles y los requerimientos del proyecto.}
+        \label{table:9}
+    \end{table} 
+     \FloatBarrier
+     Considerando al RNF1 como un requerimiento de alta prioridad y fundamental para el desarrollo de este proyecto, se procedió a descartar las soluciones comerciales por más que cumplieran con los demás requerimientos de alta prioridad. Esto llevó a continuar el análisis de riesgos teniendo en cuenta solamente las soluciones gratuitas y de código abierto.\par
+    Definidos los niveles de requerimientos de las soluciones, se plantea un sistema de puntuación, donde se asignan valores según la prioridad. El resultado se observa en el Cuadro \ref{table:10}.
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{16em}|m{7em}|}
+        
+            \hline 
+                Tipo de prioridad  & Valoración \\ 
+            \hline
+                Alta & 3 \\ 
+            \hline
+                Media  & 2 \\ 
+            \hline
+                Baja & 1 \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Valoración de prioridades de los requerimientos}
+        \label{table:10}
+    \end{table}
+     \FloatBarrier
+    Se utilizó un sistema de valoración para contrastar las soluciones preseleccionadas y elegir la más adecuada para este proyecto. \par
+    El proceso consistió en comparar  los datos sobre el cumplimiento o no de los requerimientos, que fueron extraídos del Cuadro \ref{table:9}. Posteriormente se asignó un puntaje mediante un sistema de valoración. Este último consistió en multiplicar el valor de cada prioridad por uno (1) si el requerimiento era satisfecho por la solución, en caso contrario el valor asignado fue cero (0). Finalmente los valores fueron sumados y se expuso el resultado final en el Cuadro \ref{table:11}.
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4em}|m{2em}|m{2em}|m{2em}|m{2em}|m{2em}|m{2em}|m{3em}|m{3em}|m{3em}|m{3em}| m{2em}|}
+        
+            \hline 
+                Solución & RF1& RF2& RF3& RF4& RF5& RF6& RNF1& RNF2& RNF3& RNF4 & Total\\ 
+            \hline
+                S1 & 1x3 & 1x2 & 1x3 & 1x2 & 1x1 & 1x2 & 1x3 & 1x3 & 1x2 & 1x1 & 22\\ 
+            \hline
+                S2  & 1x3 & 1x2 & 1x3 & 1x2 & 0x1 & 1x2 & 1x3 & 1x3 & 1x2 & 1x1 & 21   \\ 
+            \hline
+                S3 & 1x3 & 0x2 & 1x3 & 0x2 & 0x1 & 1x2 & 1x3 & 1x3 & 0x2 & 1x1 & 15  \\
+            \hline
+                S4 & 1x3 & 1x2 & 1x3 & 1x2 & 1x1 & 1x2 & 1x3 & 1x3 & 1x2 & 1x1 & 22 \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Valoración de las soluciones libres disponibles.}
+        \label{table:11}
+    \end{table} 
+    \FloatBarrier
+    Se observó que las soluciones mejor puntuadas fueron S1, S2 y S4, que corresponden a Greylog, Elastic (ELK) Stack y Security Onion respectivamente. \par
+    Como Graylog y Security Onion utilizan parte o todos los componentes de Elastic dentro de un entorno ya configurado, se procedió a descartar como posible solución a la pila Elastic Stack (S2). \par
+    La selección final se realizó mediante una comparativa entre Security Onion y Graylog. Si bien en el Cuadro \ref{table:11} se pudo apreciar que ambos lograron la misma valoración total, el elegido para llevar a cabo el proyecto fue Security Onion. Esto se debió a las ventajas que presenta por sobre todas las soluciones participantes, de la que se destaca el polimorfismo a nivel de plataforma. Esta última característica permite que Security Onion asuma tanto las funciones propias de un SIEM como las de un sistema IDS. \par
+    Este trabajo fue realizado en conjunto con otros dos Proyectos Integradores. Uno de ellos desplegó y configuro de sensores IDS, esto fue motivo suficiente para optar por Security Onion. \par
+    \end{section}
+    \pagebreak
+    \begin{section}{Orden de implementación de requerimientos}
+    
+    A continuación se presenta el orden de abordaje de los requerimientos, a lo largo de este documento.  \par
+    %ACÁ PONER EXPLICACIÓN DE QUE CAPITULO O ITERACIÓN SE VAN A VER LOS REQUERIMIENTOS PLANTEADOS%
+    
+    \begin{table}[h]
+    \begin{tabular}{|m{3em}|m{26em}|m{4em}|m{4em}|}
+    \hline
+    \multicolumn{1}{|l|}{Orden} & \multicolumn{1}{c|}{Requerimiento}                                                                                            & Prioridad & Código\\ \hline
+    1     & La solución propuesta debe utilizar software libre                                                                            & Alta   & RNF1   \\ \hline
+    2     & La solución debe ser compatible con sistemas operativos tipo Unix                                                             & Alta  & RNF2   \\ \hline
+    3     & Recolectar y almacenar datos de incidentes de seguridad en la infraestructura de la red corporativa                           & Alta   & RF1   \\ \hline
+    4     & Visualizar las alertas en un tablero de mando                                                                                 & Alta     & RF3 \\ \hline
+    5     & Recolectar y almacenar información contextual y asociada a los activos vinculados al incidente                                & Media & RF2    \\ \hline
+    6     & Implementar un sistema de correlación de alertas de seguridad                                                                  & Media     & RF6 \\ \hline
+    7     & Implementar un sistema de envíos de alertas de seguridad que notifique a los responsables de activos de información afectados & Media & RF4    \\ \hline
+    8     & La arquitectura de la solución debe ser escalable a demanda de la organización                                                & Media & RNF3    \\ \hline
+    9     & Definir un criterio para priorizar alertas                                                                                    & Baja   & RF5   \\ \hline
+    10    & Se requiere un despliegue automatizado de la solución                                                                         & Baja  & RNF4    \\ \hline
+    \end{tabular}
+    \caption{Orden de implementación de los requerimientos de proyecto}
+    \label{table:13}
+    \end{table}
+    \FloatBarrier
+    Como se observo en el cuadro \ref{table:13}, en primer lugar se abordaron los requerimientos RF1 y RF3 en la Iteración I. A continuación, los requerimientos RF2, RF6 Y RF4 se desarrollaron en la Iteración II. Finalmente, el requerimiento RF5 fue implementado en la Iteración III. \par
+    Los requerimientos no funcionales, como se puede inferir, no son tratados en una iteración numerada. Esto se debe a que fueron desarrollados en el Capítulo 4.
+    \end{section}
+    
