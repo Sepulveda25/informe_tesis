@@ -6,7 +6,7 @@
     \begin{section}{Selección de hardware}
     \label{seleccion_hw}
         El primer paso consistió en examinar los requisitos de hardware mínimos y recomendados por cada uno de los fabricantes de los sistemas y subsistemas elegidos. Se analizaron, por un lado, las demandas de tráfico de red en el ambiente de prueba y por el otro los requerimientos sobre los datos y capacidades que se esperan obtener del proyecto. Se realizó un diagrama topológico en la infraestructura objetivo, con esta información y los datos anteriormente mencionados, se dimensiono el hardware necesario para el servidor central, que albergó las correspondientes máquinas virtuales de este proyecto.\par
-        Según el fabricante, los requerimientos de hardware para un entorno de producción con enlaces de 1 Gbps son son los que figuran en el Cuadro \ref{table:5}.
+        Según el fabricante, los requerimientos de hardware para un entorno de producción con enlaces de 1 Gbps, en una topologia distribuida son los que figuran en el Cuadro \ref{table:5}.
         
         \begin{table}[H]
         \centering
@@ -20,6 +20,8 @@
                 Memoria RAM  & 12 a 128 GB & 128 a 256 GB & A partir de 8 GB \\ 
             \hline
                 Almacenamiento necesario & Mínimo de 1 TB  & Mínimo de 540 GB & A partir de 60 GB \\
+        \hline
+        Cantidad de interfaces de red & 1 (administración) & 2 (administración y monitoreo) & 1 (administración) \\
             \hline %linea final de tabla
         \end{tabular}
         \caption{Requerimientos de hardware recomendados por el fabricante para el monitoreo de un enlace de 1 Gbps}
@@ -27,7 +29,7 @@
         \end{table}
         
         Debido a las restricciones en la disponibilidad del hardware, se realizó una implementación aproximada, teniendo en cuenta la optimización al máximo de los recursos disponibles. \par
-	    Los nuevos requerimientos de hardware que se utilizaron se incluyen en el Cuadro \ref{table:12}.
+	    El hardware que se utilizó para cada nodo se muestra en el Cuadro \ref{table:12}.
 
         \begin{table}[H]
         \centering
@@ -41,14 +43,59 @@
                 Memoria RAM  & 16 GB & 32 GB & 8 GB \\ 
             \hline
                 Almacenamiento necesario & 500 GB  & 200 GB & 60 GB \\
+            \hline
+        Cantidad de interfaces de red & 1 (administración) & 2 (administración y monitoreo) & 1 (administración) \\
             \hline %linea final de tabla
         \end{tabular}
-        \caption{Requerimientos de hardware según el tipo de nodo desplegado. Los requerimientos varían según el tipo de enlace a monitorear.}
+        \caption{Requerimientos de hardware utilizado según el tipo de nodo desplegado.}
         \label{table:12}
         \end{table}
         \FloatBarrier
-        %En este proyecto se monitorearon enlaces de 1 Gbps de ancho de banda, por lo tanto los requerimientos para el nodo forward se incrementaron a 10 núcleos vCPU y 32 GB de memoria RAM. \par
-        En cuanto a los núcleos de CPU virtuales, su frecuencia era de 2.4 Ghz, basados en procesadores físicos Intel Xeon E5620. Las memorias RAM pertenecían a la tecnología DDR3 y su frecuencia de refresco de 2400 MHz.
+        En el caso del despliegue de una topología monolítica, los requerimientos de hardware, recomendados por el fabricante, para un nodo Standalone son los que figuran en el Cuadro \ref{table:15}. \par 
+        
+         \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{10em}|m{10em}|}
+        
+            \hline 
+                Requerimiento  & Nodo Standalone \\ 
+            \hline
+                Cantidad de CPU - Arquitectura &  10 nucleos vCPU - x86-64  \\ 
+            \hline
+                Memoria RAM  &  32 GB  \\ 
+            \hline
+                Almacenamiento necesario   & 200 GB  \\
+            \hline
+        Cantidad de interfaces de red  & 2 (administración y monitoreo) \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Requerimientos de hardware para un nodo Standalone, segun el fabricante.}
+        \label{table:15}
+        \end{table}
+        \FloatBarrier 
+        En nuestra evaluación del nodo Standalone, se utilizaron los recursos de hardware que figuran en el Cuadro \ref{table:16}.
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{10em}|m{10em}|}
+        
+            \hline 
+                Requerimiento  & Nodo Standalone \\ 
+            \hline
+                Cantidad de CPU - Arquitectura &  4 núcleos vCPU - x86-64  \\ 
+            \hline
+                Memoria RAM  &  16 GB  \\ 
+            \hline
+                Almacenamiento necesario   & 500 GB  \\
+            \hline
+        Cantidad de interfaces de red  & 2 (administración y monitoreo) \\
+            \hline %linea final de tabla
+        \end{tabular}
+        \caption{Requerimientos de hardware utilizados para el despligue del nodo Standalone.}
+        \label{table:16}
+        \end{table}
+        \FloatBarrier 
+        Si bien se dispuso de varios servidores a lo largo de este proyecto, cada uno con distinta capacidad de hardware, estas diferencias eran solo cuantitativas, ya que las características del hardware para todos los servidores eran las mismas. A continuación, se detallan las mas relevantes:
+        en cuanto a los núcleos de CPU virtuales, su frecuencia era de 2.4 Ghz, basados en procesadores físicos Intel Xeon E5620. Las memorias RAM pertenecían a la tecnología DDR3 y su frecuencia de refresco era de 2400 MHz.
         Los discos eran del tipo mecánico con una velocidad de transferencia para lectura de 196 MB/s y para escritura de 154 MB/s, con interfaz SATA III y 7200 rpm de velocidad de rotación. \par
     	Se optimizó al máximo el uso de los recursos del servidor disponible para permitir el despliegue de cuatro nodos: dos Forward y un Master de Security Onion, así como un cuarto conteniendo a TheHive y Cortex. \par
 
@@ -103,18 +150,19 @@
             \label{fig:figura_38_sonion_modo}
         \end{figure}
         \FloatBarrier
-        Seleccionado el modo de despliegue, se debió elegir entre un nuevo despliegue de Security Onion o agregar la instalación actual a un entorno existente, como se ve en la figura \ref{fig:figura_38_b_sonion_modo}. Elegida la primer opción, se creó automáticamente un nodo Master, mientras que la opción restante configuraba un nodo Forward si hubiese sido seleccionada. \par
+        %Seleccionado el modo de despliegue, se debió elegir entre un nuevo despliegue de Security Onion o agregar la instalación actual a un entorno existente, como se ve en la figura \ref{fig:figura_38_b_sonion_modo}. Elegida la primer opción, se creó automáticamente un nodo Master, mientras que la opción restante configuraba un nodo Forward si hubiese sido seleccionada. \par
+        Seleccionado el modo de despliegue, se debió elegir entre la creación de un nodo Máster o añadir un nuevo nodo Forward a una topología preexistente, como se ve en la figura \ref{fig:figura_38_b_sonion_modo}. Elegida la primer opción, se creó automáticamente un nodo Master, mientras que la opción restante configuraba un nodo Forward si hubiese sido seleccionada. \par
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_38_b_sonion_modo.png}
-            \caption{Elección entre la creación de un nuevo nodo Máster o añadir un nodo Forward a una topología existente}
+            \caption{Elección entre la creación de un nodo Máster o añadir un nuevo nodo Forward a una topología preexistente}
             \label{fig:figura_38_b_sonion_modo}
         \end{figure}
         El asistente solicito el ingreso de datos para crear una cuenta de usuario y la elección de una configuración automática o manual para el resto de las opciones: persistencia de la base de datos mysql (por defecto 30 días), número de días de respaldo en caso de falla (por defecto 7 dias), selección de conjunto de reglas de detección (Emerging Threats Open o versiones de pago), motor de IDS (suricata o snort), habilitación de los sensores IDS (no recomendado para el nodo Master), SALT y activar o no la pila Elastic. Por último se debió seleccionar el almacenamiento de los logs: localmente o en un nodo de almacenamiento, así como el tamaño límite.\par
         Posteriormente se desplegó un nodo Forward. Las configuraciones ofrecidas por el asistente fueron muy similares a las descritas para el nodo Master. Los cambios que se requirieron fueron los datos relacionados a la configuración de red del enlace al nodo Master, por lo que fue necesario que previamente exista este nodo. Finalmente, fue necesario habilitar la conexión ssh e ingresar las credenciales del nodo Master, para la comunicación mediante un autotunel ssh entre ambos nodos.\par
         Con el fin de realizar pruebas iniciales del sistema, se eligió el despliegue mediante una ISO. Posteriormente, cuando se comprobó el funcionamiento de la mayoría de sus componentes, se desplegó el sistema mediante paquetes de la distribución 16.04 de Security Onion. Esta decisión se tomo debido a una solicitud de la organización, ya que esta contaba con maquinas virtuales configuradas con Ubuntu 16.04. \par
         Se dispuso de un sistema operativo Ubuntu Server 16.04 con la particularidad de tener dos discos montados: el principal para el sistema operativo y el secundario para los datos recolectados en un directorio \textbf{/nsm}. En el caso de un servidor Master se almacenaron índices en este directorio. En el caso de un nodo Forward, en el directorio \textbf{/nsm} se resguardaron capturas de paquetes o logs. \par 
-        Sin importar el método de instalación, al finalizar el proceso, las configuraciones se pueden llevar a cabo mediante el comando \textit{sosetup -f $\sim$/sosetup.conf}. Esta instrucción ejecuta un programa que lee las configuraciones previamente guardadas en un archivo.\par
+        Sin importar el método de instalación, al finalizar el proceso, las configuraciones que se mencionaron anteriormente también se pudieron llevar a cabo mediante el comando \textit{sosetup -f $\sim$/sosetup.conf}. Esta instrucción ejecuta un programa que lee las configuraciones previamente guardadas en un archivo.\par
         Con el objetivo de cumplir uno de los requerimientos no funcionales del proyecto, que implica la automatización del despliegue (instalación y configuración) del sistema, se utilizó una herramienta de administración automatizada de servidores llamada Ansible en su versión 2.8.4 para la cual se desarrollaron scripts YAML conteniendo la secuencia de instalación de los paquetes, configuraciones, rol del nodo (Forward o Master) y librerías requeridas para el apropiado funcionamiento del sistema.\par
         \end{subsection}
         
@@ -151,7 +199,7 @@
         \begin{itemize}
             \item play.modules.enabled: habilita el módulo de Cortex
             \item url: especifica la dirección url del servidor de Cortex
-            \item key: Es la clave del usuario de Cortex, generada por TheHive.
+            \item key: Es API key del usuario de Cortex.
             \item refreshDelay: periodo de tiempo de comprobación de casos generados por TheHive
             \item maxRetryOnError: número máximo de intentos de recuperación de un error
             \item statusCheckInterval: periodo de tiempo de comprobación del estado de Cortex
@@ -247,7 +295,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/Squert_NMAP.png}
-        \caption{eventos visualizados en Squert}
+        \caption{Eventos visualizados en Squert}
         \label{fig:squert-nmap}
     \end{figure}
     \FloatBarrier
@@ -255,7 +303,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/TheHive-NMAP.png}
-        \caption{detección en TheHive del ataque de reconocimiento}
+        \caption{Detección en TheHive del ataque de reconocimiento}
         \label{fig:thehive-nmap}
     \end{figure}
     \FloatBarrier
