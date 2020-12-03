@@ -12,6 +12,7 @@
     \begin{section}{Arquitectura del sistema de gestión de eventos}
     \end{section}
     \begin{subsection}{Arquitectura de alto nivel}
+    \label{tipo_nodos}
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.7\textwidth]{./descripcion_sonion_imagenes/figura_16_arq_alto_nivel_sonion.png}
@@ -280,7 +281,7 @@
         \FloatBarrier
         Por otro lado está OSSEC (reemplazado por  Wazuh en las versiones más recientes de Security Onion), es un IDS orientado a hosts (HIDS). Al igual que los NIDS anteriores está basado en firmas para la detección de amenazas, es gratuito y de código abierto. Las reglas pueden descargarse del repositorio disponible en github. \par
    \end{subsection}
-   \begin{section}{Corolario del capítulo 4}
+   \begin{section}{Corolario}
         En este capitulo se mostró la solución elegida, sus distintas arquitecturas, sus componentes internos y los subsistemas asociados. Se pudo apreciar a TheHive como una solución complementaria a Security Onion que contribuyo a mejorar la gestión de incidentes.
         En el capítulo siguiente se desarrollo la configuración de un ambiente de prueba y se desplegaron las soluciones mencionadas anteriormente en distintas topologías. Esto permitió dar cumplimiento a los requerimientos funcionales 1 y 3. \par
    \end{section}

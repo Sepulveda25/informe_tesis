@@ -1,17 +1,63 @@
 \chapter{\Large Iteración I: “Despliegue e instalación de Security Onion en un ambiente de prueba”}
     En este capítulo describimos la instalación de Security Onion en la topología de red de prueba. Se instalará un nodo Master, dos nodos Forward y un nodo de TheHive. \par
-    En este proyecto se trabajó primero sobre un ambiente de prueba y después de producción. En ambos casos se utilizo un servidor central y un sistema operativo de virtualización sobre el que se crearon un conjunto de máquinas virtuales, cada una alojando un servidor con nodos Forward, Master y el correspondiente a TheHive - Cortex. Se utilizó de guía los componentes, el software y la arquitectura de conexión entre ellos, mencionados en la Descripción de Security Onion.
-
-    
-    \begin{section}{Selección de hardware}
-    \label{seleccion_hw}
-        El primer paso consistió en examinar los requisitos de hardware mínimos y recomendados por cada uno de los fabricantes de los sistemas y subsistemas elegidos. Se analizaron, por un lado, las demandas de tráfico de red en el ambiente de prueba y por el otro los requerimientos sobre los datos y capacidades que se esperan obtener del proyecto. Se realizó un diagrama topológico en la infraestructura objetivo, con esta información y los datos anteriormente mencionados, se dimensiono el hardware necesario para el servidor central, que albergó las correspondientes máquinas virtuales de este proyecto.\par
-        Según el fabricante, los requerimientos de hardware para un entorno de producción con enlaces de 1 Gbps, en una topologia distribuida son los que figuran en el Cuadro \ref{table:5}.
-        
+    En este proyecto se trabajó primero sobre un ambiente de prueba y despues de producción. En ambos casos se utilizó un servidor central y un sistema operativo de virtualización sobre el que se crearon un conjunto de máquinas virtuales, cada una alojando un servidor con nodos Forward, Master y el correspondiente a TheHive - Cortex. Se utilizó de guía los componentes, el software y la arquitectura de conexión entre ellos, mencionados en la Descripción de Security Onion. \par
+    \begin{section}{Topología de la organización}
+        El paso inicial consistió en relevar la topología de la organización, para ello se dispuso de información inicial que fue brindada por los responsables del sector de redes. Posteriormente se realizaron diagramas topológicos con el fin de evaluar la situación y contemplar distintas estrategias para el despliegue de este proyecto.  
+        En la Figura \ref{fig:iter1_top_unc} se observa un diagrama que representa la topología de la organización.\par
+        Se puede apreciar que las dependencias están conectadas (mediante sus routers de borde) entre sí y al mundo exterior mediante el Switch 1 de capa 3 que se encuentra en el datacenter. Se observan los servidores 1, 2 y N que representan los activos de información de la organización, estos están conectados mediante el Switch 2 al resto de la organización. Existen M switches para otras redes internas del data center, todos estos conectados al Switch 2. Este switch, por lo tanto, conecta las redes internas del datacenter y los activos de información con el Switch 3, siendo este último el switch troncal de la organización. Los enlaces anteriormente mencionados, incluidos los que conectan los routers de borde de las dependencias y el Switch 3, poseen un ancho de banda de 1 Gbps.\par
+        Se observan otros componentes de la infraestructura de la organización, encargados de la conexión exterior con el resto del mundo. Estos son el Firewall entre el Switch 1 y el Switch 5, los Routers de borde 1 y 2 junto al Switch 6 que se conecta a los proveedores ISP. Todos los enlaces entre estos componentes tienen como característica común un ancho de banda de 10 Gbps. \par
+        \begin{figure}[H]
+        \centering
+            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_topologia_UNC.png}
+            \caption{Topología de la Organización}
+            \label{fig:iter1_top_unc}
+        \end{figure}
+        \FloatBarrier
+    \end{section}
+    \begin{subsection}{Definición y configuración de las redes a observar}
+        Se decidió monitorear dos dependencias en base a un análisis del ancho de banda de las dependencias existentes. Se seleccionaron las que mayor volumen de tráfico registraban en función de un registro histórico y mediciones propias realizadas a lo largo de una semana. Las dependencias seleccionadas tenían un enlace con ancho de banda de 1 Gbps cada una, con  velocidades promedio consideradas como la suma entre entrada y salida, entre 11,95 y 47,24 Mbps respectivamente; con picos poco frecuentes de 300 Mbps de tráfico, que no se contemplaron en los requisitos de hardware, por lo tanto habrá una posible pérdida de paquetes en estos casos. Se realizó un “port mirroring” de los puertos del switch capa 3 a los que están conectados estas dependencias y se los conecto con los respectivos enlaces de monitoreo de sendos nodos Forward de Security Onion.\par
+        Las Figuras \ref{fig:figura_35_trafico_dia} y \ref{fig:figura_36_trafico_semana} fueron tomadas usando LibreNMS \cite{librenms} (versión 1.48),  estas muestran el volumen del tráfico medido en dos periodos de tiempo distintos: Durante un día (exceptuando las horas en las que la actividad era mínima) y a lo largo de una semana. Si bien estos registros que se presentan a continuación corresponden a una sola de las dependencias, la restante tenía un comportamiento análogo.\par
+        \begin{figure}[H]
+        \centering
+            \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_35_trafico_dia.png}
+            \caption{Tráfico correspondiente a una dependencia, medido durante un día, obviando las horas donde este es casi nulo}
+            \label{fig:figura_35_trafico_dia}
+        \end{figure}
+        \begin{figure}[H]
+        \centering
+            \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_36_trafico_semana.png}
+            \caption{Tráfico medido durante el periodo correspondiente a una semana}
+            \label{fig:figura_36_trafico_semana}
+        \end{figure}
+        \FloatBarrier
+        \end{subsection}
+        \begin{subsection}{Selección de hardware}
+        \label{seleccion_hw}
+        El primer paso consistió en examinar los requisitos de hardware mínimos y recomendados por cada uno de los fabricantes de los sistemas y subsistemas elegidos. Se analizaron, por un lado, las demandas de tráfico de red en el ambiente de prueba y por el otro los requerimientos sobre los datos y capacidades que se esperan obtener del proyecto. En base al diagrama de la Figura \ref{fig:iter1_top_unc}, los datos referidos al tráfico y el ancho de banda de los enlaces a monitorear, se dimensionó el hardware necesario para el servidor central, teniendo en cuenta los requerimientos del fabricante y las limitaciones disponibles en la organización. Este servidor central albergó las correspondientes máquinas virtuales de este proyecto.\par
+        El fabricante especifica que, para un despliegue Monolítico o centralizado, los requerimientos de hardware de un nodo Standalone para monitorear un enlace de 1 Gbps, se muestran en el Cuadro \ref{table:15}:
         \begin{table}[H]
         \centering
-        \begin{tabular}{|m{9em}|m{9em}|m{9em}|m{9em}|}
-        
+        \begin{tabular}{|m{10em}|m{10em}|}
+        \hline 
+            Requerimiento  & Nodo Standalone \\ 
+            \hline
+            Cantidad de CPU - Arquitectura &  10 nucleos vCPU - x86-64  \\ 
+            \hline
+            Memoria RAM  &  32 GB  \\ 
+            \hline
+            Almacenamiento necesario   & 200 GB  \\
+            \hline
+            Cantidad de interfaces de red  & 2 (administración y monitoreo) \\
+            \hline %linea final de tabla
+            \end{tabular}
+            \caption{Requerimientos de hardware para un nodo Standalone, según el fabricante.}
+            \label{table:15}
+        \end{table}
+        En el caso del despliegue de una topología Distribuida con enlaces de 1 Gbps, el fabricante recomienda los siguientes requerimientos de hardware para un entorno de producción. Estos figuran en el Cuadro \ref{table:5}.  
+        \begin{table}[H]
+            \centering
+            \begin{tabular}{|m{9em}|m{9em}|m{9em}|m{9em}|}
+            
             \hline 
                 Requerimiento  & Nodo Master &  Nodo Forward & TheHive y Cortex \\ 
             \hline
@@ -20,277 +66,135 @@
                 Memoria RAM  & 12 a 128 GB & 128 a 256 GB & A partir de 8 GB \\ 
             \hline
                 Almacenamiento necesario & Mínimo de 1 TB  & Mínimo de 540 GB & A partir de 60 GB \\
-        \hline
-        Cantidad de interfaces de red & 1 (administración) & 2 (administración y monitoreo) & 1 (administración) \\
-            \hline %linea final de tabla
-        \end{tabular}
-        \caption{Requerimientos de hardware recomendados por el fabricante para el monitoreo de un enlace de 1 Gbps}
-        \label{table:5}
+            \hline
+            Cantidad de interfaces de red & 1 (administración) & 2 (administración y monitoreo) & 1 (administración) \\
+                \hline %linea final de tabla
+            \end{tabular}
+            \caption{Requerimientos de hardware recomendados por el fabricante para el monitoreo de un enlace de 1 Gbps}
+            \label{table:5}
         \end{table}
-        
-        Debido a las restricciones en la disponibilidad del hardware, se realizó una implementación aproximada, teniendo en cuenta la optimización al máximo de los recursos disponibles. El hardware que se utilizó para cada nodo se muestra en el Cuadro \ref{table:12}. \par
-
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{9em}|m{9em}|m{9em}|m{9em}|}
-        
-            \hline 
-                Requerimiento  & Nodo Master &  Nodo Forward & TheHive y Cortex \\ 
-            \hline
-                Cantidad de CPU - Arquitectura & 8 nucleos vCPU - x86-64 & 10 nucleos vCPU - x86-64 & 8 nucleos vCPU - x86-64 \\ 
-            \hline
-                Memoria RAM  & 16 GB & 32 GB & 8 GB \\ 
-            \hline
-                Almacenamiento necesario & 500 GB  & 200 GB & 60 GB \\
-            \hline
-        Cantidad de interfaces de red & 1 (administración) & 2 (administración y monitoreo) & 1 (administración) \\
-            \hline %linea final de tabla
-        \end{tabular}
-        \caption{Requerimientos de hardware utilizado según el tipo de nodo desplegado.}
-        \label{table:12}
-        \end{table}
-        \FloatBarrier
-        En el caso del despliegue de una topología monolítica, los requerimientos de hardware, recomendados por el fabricante, para un nodo Standalone son los que figuran en el Cuadro \ref{table:15}. \par 
-        
-         \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{10em}|m{10em}|}
-        
-            \hline 
-                Requerimiento  & Nodo Standalone \\ 
-            \hline
-                Cantidad de CPU - Arquitectura &  10 nucleos vCPU - x86-64  \\ 
-            \hline
-                Memoria RAM  &  32 GB  \\ 
-            \hline
-                Almacenamiento necesario   & 200 GB  \\
-            \hline
-        Cantidad de interfaces de red  & 2 (administración y monitoreo) \\
-            \hline %linea final de tabla
-        \end{tabular}
-        \caption{Requerimientos de hardware para un nodo Standalone, según el fabricante.}
-        \label{table:15}
-        \end{table}
-        \FloatBarrier 
+        Debido a las restricciones en la disponibilidad del hardware, se realizó una implementación aproximada, teniendo en cuenta los recursos disponibles. A continuación se muestran los recursos de hardware utilizados, según se trate del despliegue de una topología Monolítica o de una Distribuida. \par
         En nuestra evaluación del nodo Standalone, se utilizaron los recursos de hardware que figuran en el Cuadro \ref{table:16}.
         \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{10em}|m{10em}|}
-        
-            \hline 
-                Requerimiento  & Nodo Standalone \\ 
-            \hline
-                Cantidad de CPU - Arquitectura &  4 núcleos vCPU - x86-64  \\ 
-            \hline
-                Memoria RAM  &  16 GB  \\ 
-            \hline
-                Almacenamiento necesario   & 500 GB  \\
-            \hline
-        Cantidad de interfaces de red  & 2 (administración y monitoreo) \\
-            \hline %linea final de tabla
-        \end{tabular}
-        \caption{Requerimientos de hardware utilizados para el despligue del nodo Standalone.}
-        \label{table:16}
-        \end{table}
-        \FloatBarrier 
-        Si bien se dispuso de varios servidores a lo largo de este proyecto, cada uno con distinta capacidad de hardware, estas diferencias eran solo cuantitativas, ya que las características del hardware para todos los servidores eran las mismas. A continuación, se detallan las mas relevantes:
-        en cuanto a los núcleos de CPU virtuales, su frecuencia era de 2.4 Ghz, basados en procesadores físicos Intel Xeon E5620. Las memorias RAM pertenecían a la tecnología DDR3 y su frecuencia de refresco era de 2400 MHz.
-        Los discos eran del tipo mecánico con una velocidad de transferencia para lectura de 196 MB/s y para escritura de 154 MB/s, con interfaz SATA III y 7200 rpm de velocidad de rotación. \par
-    	Se optimizó al máximo el uso de los recursos del servidor disponible para permitir el despliegue de cuatro nodos: dos Forward y un Master de Security Onion, así como un cuarto conteniendo a TheHive y Cortex. \par
-
-        \begin{subsection}{Configuración del entorno de virtualización}
-        Para el entorno de virtualización se utilizó VMWare ESXi \cite{vmware}, concretamente la suite vSphere HyperVisor v6.7.0 u3. Este sistema operativo basado en Unix permite gestionar los recursos de hardware disponibles, almacenar imágenes de distintos sistemas operativos y crear máquinas virtuales con estos últimos. Durante el proceso de creación de una máquina virtual, se selecciona el sistema operativo deseado y es posible asignar distintas cantidades de memoria principal, secundaria, cantidad de vCPU, número y tipo de enlaces de red, entre otros parámetros. \par
-         \begin{figure}[H]
-          \centering
-           \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_34_diagrama_VM.png}
-            \caption{ Diagrama de una máquina virtual desde el punto de vista de un HyperVisor\cite{vmware}}
-            \label{fig:maquina_virtual}
-        \end{figure}
-        \end{subsection}
-        
-        \begin{subsection}{Definición y configuración de las redes a observar}
-            Se decidió monitorear dos dependencias en base a un análisis del ancho de banda de las dependencias existentes. Se seleccionaron las que mayor volumen de tráfico registraban en función de un registro histórico y mediciones propias realizadas a lo largo de una semana. Las dependencias seleccionadas tenían un enlace con ancho de banda de 1 Gbps cada una, con  velocidades promedio consideradas como la suma entre entrada y salida, entre 11,95 y 47,24 Mbps respectivamente; con picos poco frecuentes de 300 Mbps de tráfico, que no se contemplaron en los requisitos de hardware, por lo tanto habrá una posible pérdida de paquetes en estos casos. Se realizó un “port mirroring” de los puertos del switch capa 3 a los que están conectados estas dependencias y se los conecto con los respectivos enlaces de monitoreo de sendos nodos Forward de Security Onion. \par
-            Las Figuras \ref{fig:figura_35_trafico_dia} y \ref{fig:figura_36_trafico_semana} fueron tomadas usando LibreNMS\cite{librenms} (versión 1.48)  muestran el volumen del tráfico medido en dos periodos de tiempo distintos: Durante un día (exceptuando las horas en las que la actividad era mínima) y a lo largo de una semana. Si bien estos registros que se presentan a continuación corresponden a una sola de las dependencias, la restante tenía un comportamiento análogo. \par
+            \centering
+            \begin{tabular}{|m{10em}|m{10em}|}
             
+                \hline 
+                    Requerimiento  & Nodo Standalone \\ 
+                \hline
+                    Cantidad de CPU - Arquitectura &  4 núcleos vCPU - x86-64  \\ 
+                \hline
+                    Memoria RAM  &  16 GB  \\ 
+                \hline
+                    Almacenamiento necesario   & 500 GB  \\
+                \hline
+            Cantidad de interfaces de red  & 2 (administración y monitoreo) \\
+                \hline %linea final de tabla
+            \end{tabular}
+            \caption{Requerimientos de hardware utilizados para el despliegue del nodo Standalone.}
+            \label{table:16}
+        \end{table}
+        En el caso de la topología Distribuida, el hardware que se utilizó para cada nodo se muestra en el Cuadro \ref{table:12}.
+        \begin{table}[H]
+            \centering
+            \begin{tabular}{|m{9em}|m{9em}|m{9em}|m{9em}|}
+            
+                \hline 
+                    Requerimiento  & Nodo Master &  Nodo Forward & TheHive y Cortex \\ 
+                \hline
+                    Cantidad de CPU - Arquitectura & 8 nucleos vCPU - x86-64 & 10 nucleos vCPU - x86-64 & 8 nucleos vCPU - x86-64 \\ 
+                \hline
+                    Memoria RAM  & 16 GB & 32 GB & 8 GB \\ 
+                \hline
+                    Almacenamiento necesario & 500 GB  & 200 GB & 60 GB \\
+                \hline
+            Cantidad de interfaces de red & 1 (administración) & 2 (administración y monitoreo) & 1 (administración) \\
+                \hline %linea final de tabla
+            \end{tabular}
+            \caption{Requerimientos de hardware utilizado según el tipo de nodo desplegado.}
+            \label{table:12}
+        \end{table}
+    
+    \end{subsection}
+        \begin{subsubsection}{Características del hardware empleado}
+            Si bien se dispuso de varios servidores a lo largo de este proyecto, cada uno con distinta capacidad de hardware, estas diferencias eran sólo cuantitativas, ya que las características del hardware para todos los servidores eran las mismas. A continuación, se detallan las más relevantes:
+            \begin{itemize}
+                \item En cuanto a los núcleos de CPU virtuales, su frecuencia era de 2.4 Ghz, basados en procesadores físicos Intel Xeon E5620.
+                \item Las memorias RAM pertenecían a la tecnología DDR3 y su frecuencia de refresco era de 2400 MHz.
+                \item Los discos utilizados fueron del tipo mecánico con una velocidad de transferencia para lectura de 196 MB/s y para escritura de 154 MB/s, con interfaz SATA III y 7200 rpm de velocidad de rotación.
+            \end{itemize}
+        \end{subsubsection}
+    
+    \begin{section}{Monitoreo de red}
+        Durante el desarrollo de este proyecto, se evaluaron dos tipos de topologías de red. En primer lugar se ensayo con un tipo de topología monolítica que concentraba todos los componentes esenciales de Security Onion. Si bien se conocía que el rendimiento no era óptimo (sección \ref{tipo_nodos}), se decidió comenzar por este punto para evaluar inicialmente al sistema. \par      
+        Con el conocimiento adquirido sobre la naturaleza de Security Onion, se procedió a experimentar y finalmente desplegar en producción, versiones correspondientes a topologías distribuidas de la solución. \par
+    \end{section}
+    
+        \begin{subsection}{Topología Monolítica de Monitoreo}
+            Con motivo de familiarizarnos con Security Onion, se decidió desplegar este tipo de topología para facilitar la comprensión del funcionamiento de sus componentes. Se realizaron pruebas de los requerimientos funcionales 1 y 3: se comprobó la capacidad de recolectar y almacenar datos de incidentes de seguridad en la infraestructura de red de la organización, al enviar PCAPS e información previamente generadas de ataques que había sufrido la organización en el pasado. \par
+            En la Figura \ref{fig:figura_33_a}, se observa una típica topología de red en el cual se despliega la solución con una arquitectura monolítica. En el switch se encuentran conectadas dos terminales y el nodo monolítico de Security Onion. Una terminal simula ser la de un analista consultando y visualizando datos en Security Onion, mientras que la terminal restante envía logs mediante Filebeat \cite{filebeat}, conteniendo información contextual de los activos de la red. Esto permite cumplir el requerimiento funcional 2, que será tratado y demostrado en la Iteración II (Capítulo \ref{iteracion2}).
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_35_trafico_dia.png}
-                \caption{Tráfico correspondiente a una dependencia, medido durante un día, obviando las horas donde este es casi nulo}
-                \label{fig:figura_35_trafico_dia}
-            \end{figure}
-            \begin{figure}[H]
-            \centering
-            \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_36_trafico_semana.png}
-            \caption{Tráfico medido durante el periodo correspondiente a una semana}
-            \label{fig:figura_36_trafico_semana}
-            \end{figure}
-        \end{subsection}
-    \end{section}
-    
-    \begin{section}{Configuración inicial del sistema base}
-        Es posible instalar Security Onion en su versión 16.04 de dos maneras: mediante una ISO provista por los desarrolladores o bien mediante una serie de paquetes en una distribución Ubuntu \cite{ubuntu}. En este último caso será necesario contar con la distribución Ubuntu en su versión 16.04, ya que las distribuciones de Security Onion siguen a las distribuciones respectivas de Ubuntu. A partir del año 2020 se lanzaron nuevas versiones de Security Onion con soporte a otras distribuciones Linux: CentOS 7 y Ubuntu 18.04 y 20.04, aunque en el futuro se podrá desplegar en otros tipos de sistema Linux. Desde la versión 2.x de Security Onion en adelante, el sistema se despliega en contenedores.
-        \begin{subsection}{Instalación y configuración de Security Onion}
-        Como se mencionó en la sección anterior, existen dos maneras de instalar esta versión de Security Onion: a partir de una imagen ISO o mediante paquetes. \par 
-        En primer lugar se crearon dos máquinas virtuales sobre el hipervisor VMWare ESX(i), con los requisitos definidos en la sección \ref{seleccion_hw} para un nodo Master y Forward.\par
-        En las maquinas virtuales se utilizo la ISO de Security Onion. La instalación se realizo mediante el asistente integrado que dispone la imagen del sistema operativo. Este asistente comenzo por configurar la interfaz de red como enlace de administración, como se ve en la Figura \ref{fig:figura_37_sonion_conf}. Se solicito ingresar parámetros para la configuración de IP estática o dinámica, servidor DNS, etc. \par
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.5\textwidth]{./iteracion_1_imagenes/figura_37_sonion_conf.png}
-            \caption{Elección de la interfaz de administración}
-            \label{fig:figura_37_sonion_conf}
-        \end{figure}
-        \FloatBarrier
-        En segundo lugar, el asistente preguntó si se deseaba configurar una interfaz para monitoreo. Este paso fue importante ya que si lo que se estaba desplegando era un nodo Master en una topología distribuida, habia que elegir la opción de no implementar una interfaz de monitoreo. Cuando tuvimos que desplegar un nodo Forward en una topología distribuida fue necesario seleccionar la opción para configurar una interfaz para monitorear tráfico de red. \par
-        Luego de aceptar las modificaciones propuestas por el asistente, el sistema se reinició. Completado el reinicio, fue necesario volver a ejecutar el asistente de instalación, que nuevamente preguntó si se deseaba configurar las interfaces de red. Fue necesario seleccionar la opción de saltar este paso, tras lo cual el asistente preguntó el modo de despliegue del sistema: evaluación o producción, como se ve en la figura \ref{fig:figura_38_sonion_modo}
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_38_sonion_modo.png}
-            \caption{El asistente de instalación permitía elegir el modo de despliegue}
-            \label{fig:figura_38_sonion_modo}
-        \end{figure}
-        \FloatBarrier
-        %Seleccionado el modo de despliegue, se debió elegir entre un nuevo despliegue de Security Onion o agregar la instalación actual a un entorno existente, como se ve en la figura \ref{fig:figura_38_b_sonion_modo}. Elegida la primer opción, se creó automáticamente un nodo Master, mientras que la opción restante configuraba un nodo Forward si hubiese sido seleccionada. \par
-        Seleccionado el modo de despliegue, se debió elegir entre la creación de un nodo Máster o añadir un nuevo nodo Forward a una topología preexistente, como se ve en la figura \ref{fig:figura_38_b_sonion_modo}. Elegida la primer opción, se creó automáticamente un nodo Master, mientras que la opción restante configuraba un nodo Forward si hubiese sido seleccionada. \par
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_38_b_sonion_modo.png}
-            \caption{Elección entre la creación de un nodo Máster o añadir un nuevo nodo Forward a una topología preexistente}
-            \label{fig:figura_38_b_sonion_modo}
-        \end{figure}
-        El asistente solicito el ingreso de datos para crear una cuenta de usuario y la elección de una configuración automática o manual para el resto de las opciones: persistencia de la base de datos mysql (por defecto 30 días), número de días de respaldo en caso de falla (por defecto 7 dias), selección de conjunto de reglas de detección (Emerging Threats Open o versiones de pago), motor de IDS (suricata o snort), habilitación de los sensores IDS (no recomendado para el nodo Master), SALT y activar o no la pila Elastic. Por último se debió seleccionar el almacenamiento de los logs: localmente o en un nodo de almacenamiento, así como el tamaño límite.\par
-        Posteriormente se desplegó un nodo Forward. Las configuraciones ofrecidas por el asistente fueron muy similares a las descritas para el nodo Master. Los cambios que se requirieron fueron los datos relacionados a la configuración de red del enlace al nodo Master, por lo que fue necesario que previamente exista este nodo. Finalmente, fue necesario habilitar la conexión ssh e ingresar las credenciales del nodo Master, para la comunicación mediante un autotunel ssh entre ambos nodos.\par
-        Con el fin de realizar pruebas iniciales del sistema, se eligió el despliegue mediante una ISO. Posteriormente, cuando se comprobó el funcionamiento de la mayoría de sus componentes, se desplegó el sistema mediante paquetes de la distribución 16.04 de Security Onion. Esta decisión se tomo debido a una solicitud de la organización, ya que esta contaba con maquinas virtuales configuradas con Ubuntu 16.04. \par
-        Se dispuso de un sistema operativo Ubuntu Server 16.04 con la particularidad de tener dos discos montados: el principal para el sistema operativo y el secundario para los datos recolectados en un directorio \textbf{/nsm}. En el caso de un servidor Master se almacenaron índices en este directorio. En el caso de un nodo Forward, en el directorio \textbf{/nsm} se resguardaron capturas de paquetes o logs. \par 
-        Sin importar el método de instalación, al finalizar el proceso, las configuraciones que se mencionaron anteriormente también se pudieron llevar a cabo mediante el comando \textit{sosetup -f $\sim$/sosetup.conf}. Esta instrucción ejecuta un programa que lee las configuraciones previamente guardadas en un archivo.\par
-        Con el objetivo de cumplir uno de los requerimientos no funcionales del proyecto, que implica la automatización del despliegue (instalación y configuración) del sistema, se utilizó una herramienta de administración automatizada de servidores llamada Ansible en su versión 2.8.4 para la cual se desarrollaron scripts YAML conteniendo la secuencia de instalación de los paquetes, configuraciones, rol del nodo (Forward o Master) y librerías requeridas para el apropiado funcionamiento del sistema.\par
-        \end{subsection}
-        
-        \begin{subsection}{Instalación y configuración de TheHive - Cortex}
-        Para la instalación del gestor de incidentes, que tiene como componentes a  TheHive y Cortex, se utilizó  el sistema operativo Debian 10. En primer lugar se instaló TheHive, para ello fue necesario realizar la instalación previa de los componentes necesarios como las librerías de Java 8, Python (versiones 2.7 y 3.6) y Elasticsearch; este último requirió una configuración en su archivo elasticsearch.yaml, como se ve en la Figura \ref{fig:figura_39_thehive_conf}:
-        
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_39_thehive_conf_elastic.png}
-            \caption{Configuración añadida a elasticsearch.yaml para la instalación de TheHive}
-            \label{fig:figura_39_thehive_conf}
-        \end{figure}
-        Las modificaciones realizadas a este archivo fueron:
-        \begin{itemize}
-            \item network.host: dirección IP del servidor que contiene Elasticsearch, en este caso es el mismo por lo que se indico la dirección local.
-            \item cluster.name: nombre del cluster en el que se desplegó Elasticsearch.
-            \item Thread\_pool.index.queue\_size: tamaño de la cola de índices.
-            \item Thread\_pool.search.queue\_size: tamaño de la cola para operaciones de búsqueda pendientes.
-            \item Thread\_pool.bulk.queue\_size: tamaño de la cola de operaciones de escritura pendientes para un documento.
-        \end{itemize}
-        \par
-        Finalmente, los últimos pasos para la instalación de TheHive consistieron en habilitar e iniciar el servicio de elasticsearch, agregar el repositorio que contiene los paquetes de TheHive, instalarlo y luego habilitar el servicio para poder iniciarlo. \par
-        En cuanto a Cortex, el proceso fue similar al anteriormente descrito para TheHive, donde una vez descargados e instalados los paquetes de Cortex con su correspondiente secuencia de habilitación e inicio; se procedió a descargar del repositorio los responders y analyzers respectivos. Por último, se modificó el archivo de configuración de Cortex para indicar la ubicación del directorio que contiene los responders y analyzers mencionados anteriormente. \par
-        Posteriormente se actualizó la base de datos elasticsearch mediante la GUI web de Cortex, se creó un superusuario y luego las organizaciones donde se administraron usuarios comunes y analyzers; fue necesario crear un usuario con el rol de administrador de organizaciones. Las organizaciones tuvieron habilitados y configurados determinados responders y analyzers según fue necesario. \par
-        El último paso del proceso consistio en comunicar TheHive y Cortex entre sí. Para ello se generó una API key en Cortex que fue usada como parte de las modificaciones necesarias al archivo application.conf de TheHive. Las modificaciones completas que se realizaron al mencionado archivo se pueden apreciar en la Figura \ref{fig:figura_40_thehive_cortex_conf}:\par
-        
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_40_thehive_cortex_conf.png}
-            \caption{Modificación al archivo application.conf de TheHive para la comunicación con Cortex}
-            \label{fig:figura_40_thehive_cortex_conf}
-        \end{figure}
-        Los campos modificados que se pueden observar son:
-        \begin{itemize}
-            \item play.modules.enabled: habilita el módulo de Cortex
-            \item url: especifica la dirección url del servidor de Cortex
-            \item key: Es API key del usuario de Cortex.
-            \item refreshDelay: periodo de tiempo de comprobación de casos generados por TheHive
-            \item maxRetryOnError: número máximo de intentos de recuperación de un error
-            \item statusCheckInterval: periodo de tiempo de comprobación del estado de Cortex
-        \end{itemize}
-        
-        \end{subsection}
-    \end{section}
-    
-    
-    \begin{section}{Topologías de red }
-        Durante el desarrollo de este proyecto, se evaluaron dos tipos de topologías de red. En primer lugar se ensayo con un tipo de topología monolítica que concentraba todos los componentes esenciales de Security Onion. Si bien se conocía que el rendimiento no era óptimo, se decidió comenzar por este punto para evaluar inicialmente al sistema. \par
-        Con el conocimiento adquirido sobre la naturaleza de Security Onion, se procedió a experimentar y finalmente desplegar en producción, versiones correspondientes a topologías distribuidas de la solución. \par
-
-        \begin{subsection} {Topología Monolítica}
-            Con motivo de familiarizarnos con Security Onion, se decidió desplegar este tipo de topología para facilitar la comprensión del funcionamiento de sus componentes. Se realizaron pruebas de los requerimientos funcionales 1 y 3: se comprobó la capacidad de recolectar y almacenar datos de incidentes de seguridad en la infraestructura de red de la organización, al enviar PCAPS e información previamente generadas de ataques que había sufrido la organización en el pasado. Se pudo observar estos eventos en un panel de mando, con lo que se verificó el cumplimiento del requisito funcional 3.\par 
-            En la Figura \ref{fig:figura_33_a}, se observa una típica topología de red en el cual se despliega la solución con una arquitectura monolítica. En el switch se encuentran conectadas dos terminales y el nodo monolítico de Security Onion. Una terminal simula ser la de un analista consultando y visualizando datos en Security Onion, mientras que la terminal restante envía logs mediante Filebeat \cite{filebeat}, conteniendo información contextual de los activos de la red. Esto permite cumplir el requerimiento funcional 2, que sera tratado y demostrado en la Iteración II (Capitulo \ref{iteracion2}). 
-            \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_33_a_topologia_de_prueba_1.png}
-            \caption{Topología monolítica}
-            \label{fig:figura_33_a}
+                \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_33_a_topologia_de_prueba_1.png}
+                \caption{Topología monolítica}
+                \label{fig:figura_33_a}
             \end{figure}
             El nodo monolítico de Security Onion dispone de dos conexiones. La correspondiente al puerto eth0 es la que permite la administración del sistema y la consulta de sus datos, mientras que la interfaz eth1 es la destina a monitorear el tráfico de una red. En nuestro experimento con esta arquitectura, todo el tráfico fue simulado usando los PCAPS mencionados anteriormente. \par
-            Este tipo de topología es ineficiente para el uso en entornos de producción, dado que la pila Elastic y los componentes de los sensores IDS demandan un uso intensivo de hardware. Por esta razón se procedió a analizar el despliegue de una topología distribuida.
-            \par
-            En la siguiente sección (\ref{subsection:topo_dist}) se demuestra el cumplimiento de los requerimientos funcionales 1 y 3.
+            En la Figura \ref{fig:iter1_top_m_unc} se observa la topología de la organización con un nodo Monolítico. Este tiene su interfaz de monitoreo conectada al Switch 3, donde recibe el tráfico reenviado que se produce entre la Dependencia 1 y el mencionado switch.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_topologia_m_unc.png}
+                \caption{Despliegue de una topología monolítica de monitoreo}
+                \label{fig:iter1_top_m_unc}
+            \end{figure}
         \end{subsection}
-        \begin{subsection} {Topología Distribuida}
-        \label{subsection:topo_dist}
+        
+        \begin{subsection}{Topología Distribuida de Monitoreo}
+        \label{sec_topo_dist}
             Después de comprobar el funcionamiento de los principales componentes de Security Onion y obtener la experiencia descrita en la sección anterior, se procedió a considerar el despliegue de una topología distribuida. Este tipo de topología presenta considerables ventajas respecto de su alternativa monolítica, fundamentalmente en términos de rendimiento del hardware y flexibilidad de adaptación, tal como se mencionó en el Capítulo  \ref{tipos_de_arquitectura}. \par
-            En primer lugar, se desplegó una versión simplificada para verificar el funcionamiento de los componentes de los dos nodos que la componen (nodos Forward y Master) y la comunicación entre ellos.\par
+            En primer lugar, se desplegó una versión simplificada para verificar el funcionamiento de los componentes de los dos nodos que la componen (nodos Forward y Master) y la comunicación entre ellos.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_33_b_topologia_de_prueba_2.png}
                 \caption{Versión elemental de una topología distribuida}
                 \label{fig:topologia_distribuida_1}
             \end{figure}
-            \FloatBarrier
-            Se observa en la Figura \ref{fig:topologia_distribuida_1} los componentes fundamentales de Security Onion para poder llevar a cabo esta topología: un nodo Forward conectado a la interfaz a monitorear y un nodo Master conectado al switch de la red interna. El nodo Master y el Forward se comunican mediante el enlace de administración del nodo Forward, que es el que está conectado al switch. \par
-            En este caso, como en el descrito en la sección anterior (referencia a la sección anterior), se utilizaron logs y tráficos de red obtenidos con anterioridad. El objetivo de esta experiencia fue comprobar el correcto funcionamiento de los dos nodos. \par
-            Adicionalmente, con el motivo de probar la generación de notificaciones de alertas, se comprobó el funcionamiento de ElastAlert, que forma parte de los componentes del nodo Master. \par
-            La experiencia consistió en enviar logs desde la terminal con Filebeat, para que posteriormente fueran filtrados. Para esta tarea se empleó logstash junto a un plugin llamado grok. Se buscó identificar campos de interés que estuvieran presentes en los logs y se hallaron direcciones IP. Se crearon alertas en ElastAlert que se activaron al detectar estas IP y se enviaron mensajes por un servidor de correo electrónico (propio de la organización) y aplicaciones (Telegram y Slack). Los resultados de este experimento cumplieron con el requerimiento funcional 4, que se trata en la iteración II (Capítulo \ref{iteracion2}).\par
-            Si bien Security Onion incluye gran parte de los componentes de un SIEM, es necesario otro sistema más que sea capaz de recolectar las alertas generadas en primera instancia por el nodo Master y manipular esta información para lograr un manejo eficaz de los incidentes. Este sistema es TheHive. \par
-            Se observa en la Figura \ref{fig:topologia_distribuida_2} el despliegue de TheHive junto a los nodos Forward y Master anteriormente mencionados. En esta ocasión, el servidor en el que se encuentra instalado TheHive está conectado a los otros nodos y los terminales mediante el switch.\par
-            TheHive recibe las alertas generadas en el nodo Master por ElastAlert y las introduce en un proceso de correlación de incidentes para proporcionar mayor información del mismo a los analistas del CSIRT. \par
-            TheHive, Cortex y los componentes del nodo Master (Kibana y Squert) son los únicos componentes visibles con los que interactúan los analistas. \par
-            De esta manera, se completan los componentes del SIEM al ofrecer un manejo centralizado de los datos de incidentes de seguridad de la información.\par
-            \begin{figure}[H]
-            \centering
-             \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_33_c_topologia_de_prueba_3.png}
-                \caption{Versión simplificada de la topología distribuida con todos sus componentes}
-                \label{fig:topologia_distribuida_2}
-            \end{figure}
-            \FloatBarrier
-            Luego de la incorporación de TheHive, se volvió a repetir el experimento detallado anteriormente, esta vez con el objetivo de que TheHive recibiera las alertas generadas en el nodo Master mediante ElastAlert. A diferencia del experimento anterior, en el que el nodo Master recibía logs filtrados desde Filebeat, en esta ocasión se lanzó al nodo Forward un ataque simulado por su interfaz de monitoreo.\par
-            De esta manera, cuando el nodo Forward identificó el ataque, notificó al nodo Master del mismo. En el nodo Master, ElastAlert generó alertas que fueron enviadas al servidor de TheHive, quien las presentó a los analistas junto a información contextual que intentó correlacionar con información presente en su base de datos.\par
-            %ACA CAMBIAR EL ARCHIVO Y NOMBRE DE LA FIGURA POR LA QUE ESTA CREANDO FEDE
-            \begin{figure}[H]
-            \centering
-             \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_33_d_topologia_de_prueba_4.png}
-                \caption{Prueba de topología distribuida con trafico real}
-              \label{fig:topologia_distribuida_4}
-            \end{figure}
-            \FloatBarrier
-            Posteriormente, se procedió a reemplazar la terminal que, con el objetivo de simular ataques, enviaba paquetes al nodo Forward de Security Onion. El enlace que estaba conectado a esta terminal fue reemplazado por otro unido a un puerto de un switch Capa 3. Este dispositivo estaba, a su vez, conectado con una dependencia de la organización. Se repitió el experimento pero en lugar de tener un ataque simulado, el tráfico monitoreado por el nodo Forward procedía del tráfico real de la dependencia que era redirigido mediante el switch capa 3. La topología del experimiento mencionado se puede observar en la Figura (\ref{fig:topologia_distribuida_4}).\par
-            Finalmente, se procedió a desplegar la configuración final de la topología de este proyecto. Esta consistió en agregar un segundo nodo Forward para monitorear el tráfico de una dependencia adicional, como se muestra en la Figura \ref{fig:topologia_despliegue_proyecto}.
-            \par
+            Se observa en la Figura \ref{fig:topologia_distribuida_1} los componentes fundamentales de Security Onion para poder llevar a cabo esta topología: un nodo Forward conectado a la interfaz a monitorear y un nodo Master conectado al switch de la red interna. El nodo Master y el Forward se comunican mediante un enlace de administración (interfaz eth0 del nodo Forward), que es el que está conectado al Switch. \par
+            En este caso, como en el descrito en la sección anterior (referencia a la sección anterior), se utilizaron logs y tráficos de red obtenidos con anterioridad. El objetivo de esta experiencia fue comprobar el correcto funcionamiento de los dos nodos. Adicionalmente, con el motivo de probar la generación de notificaciones de alertas, se comprobó el funcionamiento de ElastAlert, que forma parte de los componentes del nodo Master. \par
+            La experiencia consistió en enviar logs desde la terminal con Filebeat, para que posteriormente fueran filtrados. Para esta tarea se empleó Logstash junto a un plugin llamado Grok. Se buscó identificar campos de interés que estuvieran presentes en los logs y se hallaron direcciones IP. Se crearon alertas en ElastAlert que se activaron al detectar estas IP y se enviaron mensajes por un servidor de correo electrónico (propio de la organización) y aplicaciones (Telegram y Slack). Los resultados de este experimento verificaron el RF4, que se trata en la iteración II (Capítulo \ref{iteracion2}). \par
+            Si bien Security Onion incluye gran parte de los componentes de un SIEM, es necesario un sistema adicional que sea capaz de recolectar las alertas generadas en primera instancia por el nodo Master y manipular esta información para lograr un manejo eficaz de los incidentes. Este sistema es TheHive. \par
+            TheHive recibe las alertas generadas en el nodo Master por ElastAlert y las introduce en un proceso de correlación de incidentes para proporcionar mayor información del mismo a los analistas del CSIRT. TheHive, Cortex y los componentes del nodo Master (Kibana y Squert) son los únicos componentes visibles con los que interactúan los analistas. \par
+            De esta manera, se completan los componentes del SIEM al ofrecer un manejo centralizado de los datos de incidentes de seguridad de la información. Cuando el nodo Forward identificó un  ataque, notificó al nodo Master del mismo. En este último, ElastAlert generó alertas que fueron enviadas al servidor de TheHive, quien las presentó a los analistas junto a información contextual que intentó correlacionar con información presente en su base de datos.\par
+            Finalmente, se procedió a desplegar la configuración final de la topología de la solución en este proyecto. Esta consistió en agregar un segundo nodo Forward para monitorear el tráfico de una dependencia adicional, como se muestra en la Figura \ref{fig:iter1_top_d_unc}.
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_33_arquitectura_despliegue_proyecto.png}
-                \caption{Topología de Despliegue}
-                \label{fig:topologia_despliegue_proyecto}
+                \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_topologia_d_unc.png}
+                \caption{Despliegue de una topología distribuida de monitoreo}
+                \label{fig:iter1_top_d_unc}
             \end{figure}
-            \FloatBarrier
-             La Figura \ref{fig:topologia_despliegue_proyecto} muestra la topología de prueba donde se instaló Security Onion. Se observan los proveedores de conexión a internet (ISP) y la conexión con el router de borde de la organización. Este último se conecta mediante un enlace gigabit en el puerto Gig0 al puerto Gig4 del switch 1 (capa 3). \par
-             El switch 1 es un dispositivo de red de capa 3, que conecta las dependencias entre sí y con el datacenter. Las conexiones mencionadas se implementan físicamente sobre un enlace gigabit de fibra óptica, pero virtualmente sobre redes tipo VLAN. De esta manera, por ejemplo, la dependencia 1 está conectada físicamente por un enlace gigabit a través de su puerto Gig1 de su router de borde, con el puerto Gig5 del switch capa 3. Desde el punto de vista lógico, este enlace pertenece a la VLAN 1 de la organización. La situación descrita es análoga para el resto de las dependencias de la Universidad.\par
-            Por otro lado, el switch 1 (en adelante SW 1), está conectado a los nodos Forward 1 y 2 de Security Onion. Como resultado, es posible reenviar el tráfico entre SW1 y las dependencias 1 y 2 hacia los puertos Gig0 y Gig2 de SW1 que conectan SW1 con los nodos Forward 1 y 2. \par
-            SW1 está conectado con un switch 2 perteneciente al datacenter, al cual se conectan a su vez los terminales de los analistas, los nodos Master y Forward (1 y 2) de Security Onion y TheHive. Esta topología permite desplegar una arquitectura distribuida de Security Onion, que fue la elegida para este proyecto. 
+            La Figura \ref{fig:iter1_top_d_unc} muestra la topología de prueba donde se instaló Security Onion. Se observan los proveedores de conexión a internet (ISP) y la conexión con el router de borde de la organización. Este último se conecta mediante un enlace gigabit en el puerto Gig0 al puerto Gig4 del Switch 1 (capa 3). \par
+            El Switch 1 es un dispositivo de red de capa 3, que conecta las dependencias entre sí y con el datacenter. Las conexiones mencionadas se implementan físicamente sobre un enlace gigabit de fibra óptica, pero virtualmente sobre redes tipo VLAN. De esta manera, por ejemplo, la Dependencia 1 está conectada físicamente por un enlace gigabit a través de su puerto Gig1 de su router de borde, con el puerto Gig5 del Switch 1 capa 3. Desde el punto de vista lógico, este enlace pertenece a la VLAN 1 de la organización. La situación descrita es análoga para el resto de las dependencias de la Universidad. \par
+            Por otro lado, el Switch 1 (en adelante SW 1), está conectado a los nodos Forward 1 y 2 de Security Onion. Como resultado, es posible reenviar el tráfico entre SW1 y las dependencias 1 y 2 hacia los puertos Gig0 y Gig2 de SW1 que conectan SW1 con los nodos Forward 1 y 2. \par
+            SW1 está conectado con un switch 2 perteneciente al datacenter, al cual se conectan a su vez los terminales de los analistas, los nodos Master y Forward (1 y 2) de Security Onion y TheHive. Esta topología permite desplegar una arquitectura distribuida de Security Onion, que fue la elegida para este proyecto.
         \end{subsection}
-
-   \end{section}
-    \pagebreak
-    \begin{section}{Verificación de los requerimientos funcionales 1 y 3}
-    Luego de haber desplegado la topología distribuida que se observa de la Figura \ref{fig:topologia_distribuida_4}, se verificó el cumplimiento de los requerimientos RF1 y RF3. Para ello se llevó a cabo un reconocimiento de los puertos de una computadora ubicada en una dependencia de la organización. Se seleccionó esta computadora mediante un acuerdo con los responsables del área, para fines de evaluación de este proyecto. \par
-    Esta acción ofensiva consistió en un reconocimiento utilizando rutinas de NMAP \cite{nmap} (versión 7.80) configuradas a tal fin: \textit{nmap -T4 -A -v IP\_VICTIMA} . Los parámetros utilizados fueron:
-    \begin{itemize}
+    \begin{section}{Verificación de RF1 y RF3}
+        Luego de haber desplegado la topología distribuida que se observa de la Figura \ref{fig:iter1_ver_RF1_RF2}, se verificó el cumplimiento de los requerimientos RF1 y RF3. Para ello se llevó a cabo una acción ofensiva sobre un servidor ubicado en el datacenter. Se seleccionó este servidor mediante un acuerdo con los responsables del área, para fines de evaluación de este proyecto. Este activo de la organización fue configurado a modo de prueba con un servidor web Apache versión 2.4.46, que contaba con una formulario web en PHP versión  7.2.21  y una base de datos MySQL versión 8.0.17.\par
+        \begin{figure}[H]
+        \centering
+            \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/Topologia de despliegue descentralizada RF1 y RF3.png}
+            \caption{Despliegue de una topología distribuida de monitoreo}
+            \label{fig:iter1_ver_RF1_RF2}
+            \end{figure}
+            El ataque consistió en un reconocimiento que partió desde el host ATACANTE ubicado dentro de la Dependencia 1 hacia la víctima llamada Servidor 1 que se encontraba dentro del datacenter.
+            Para realizar el reconocimiento se utilizaron rutinas de NMAP \cite{nmap} (versión 7.80) configuradas a tal fin: \textit{nmap -T4 -A -v IP\_VICTIMA} . Los parámetros utilizados fueron:
+         \begin{itemize}
         \item -T4: para un escaneo intensivo (disminuye el tiempo de ejecución entre scripts)
         \item -A: habilita la detección del sistema operativo de la víctima y su versión, los scripts de escaneo y traceroute.
         \item -v: habilita el modo “verboso”.
         \item IP\_VICTIMA: es la dirección IP objetivo de este reconocimiento.
     \end{itemize}
-    En el recuadro rojo se puede observar la detección y visualización en Squert del reconocimiento realizado. El resto de la información que se aprecia en la Figura \ref{fig:squert-nmap} corresponde a otros eventos que el sistema estaba detectando. Squert agrupa los eventos según la categoría a la que pertenecen y los clasifica mediante un indicador de colores (barra vertical a la derecha del contador de eventos de cada fila) según su prioridad de atención. Por defecto, Squert tiene su propia categoría de prioridades. Luego se observa la cantidad de eventos según su dirección, hora del último incidente ocurrido junto con su ID, una descripción de la firma del evento y el porcentaje de ocurrencia respecto al total de incidentes detectados.
+    En la Figura \ref{fig:squert-nmap} se observa el panel de visualizacion de eventos de Squert.  En el recuadro rojo se encuentra la detección del reconocimiento realizado. El resto de la información que se aprecia en el panel principal corresponde a otros eventos que el sistema estaba detectando. Los eventos se agrupan según la categoría a la que pertenecen y un indicador de colores (barra vertical a la derecha del contador de eventos de cada fila) indica su prioridad de atención. %*Por defecto, Squert tiene su propia categoría de prioridades.
+    Luego se observan la cantidad de eventos según su dirección, hora del último incidente ocurrido junto con su ID, una descripción de la firma del evento y el porcentaje de ocurrencia respecto al total de incidentes detectados.
     \begin{figure}[H]
         \centering
         \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/Squert_NMAP.png}
@@ -307,5 +211,15 @@
     \end{figure}
     \FloatBarrier
     Se verificó que las direcciones IP reportadas en el incidente por Squert y TheHive, coincidieran con las de la víctima y el atacante. Además mientras se estaba ejecutando el ataque, se hizo un seguimiento mediante Wireshark \cite{wireshark} filtrando las direcciones IP de origen y destino. Esto permitió corroborar el flujo de datos entre ambos.\par
-    Con esta prueba se verifica el cumplimiento de los requerimientos funcionales 1 y 3: “recolectar y almacenar datos de incidentes de seguridad en la infraestructura de la red corporativa ” y “visualizar las alertas en un tablero de mando”.
+    Con esta prueba se verifica el cumplimiento de los requerimientos funcionales 1 y 3: “recolectar y almacenar datos de incidentes de seguridad en la infraestructura de la red corporativa ” y “visualizar las alertas en un tablero de mando”.\par
+
+    \end{section} 
+    
+    
+    \begin{section}{Colorario}
+        En cuanto a la topología de la organización (Figura \ref{fig:iter1_top_unc}), podemos concluir que, en primer lugar, al tratarse de una topología tipo estrella, la mejor opción para monitorear el tráfico entre las dependencias de la organización y el mundo exterior fue conectar los sensores al Switch 1 (el switch troncal), de manera de poder reenviar el tráfico entre las dependencias y el mencionado switch. En segundo lugar, con el objetivo de ofrecer una defensa de punto final sobre activos de información específicos, fue necesario conectar sensores al switch al que se encuentran conectados estos activos. En este caso, se conectaron sensores al Switch 2. \par 
+        Se pudo observar que la topología Monolítica fue ineficiente para el uso en entornos de producción, dado que la pila Elastic y los componentes de los sensores IDS demandaron un uso intensivo de hardware. Si bien este tipo de topología fue útil a fines de probar el sistema o para monitorear enlaces de reducido tráfico y poco ancho de banda, resultó totalmente ineficiente en entornos más complejos.\par
+        En la organización donde desplegamos nuestro proyecto, debieron ser monitoreados múltiples enlaces y cada uno de estos con un ancho de banda mucho más grande que el conveniente para un nodo monolítico, este tipo de topología demostró ser ineficiente. Las razones se debieron a los enormes requisitos de hardware necesarios para monitorear un enlace de 1 Gbps y considerando que el despliegue final requirió el monitoreo de múltiples enlaces con este ancho de banda, este tipo de topología fue incapaz de escalar utilizando el hardware disponible.\par
+        Como consecuencia de la incapacidad de escalamiento horizontal descrita y siendo esta un requerimiento no funcional de este proyecto, se procedió a evaluar el despliegue de una topología distribuida de Security Onion. Los resultados de esta prueba fueron positivos, por lo cual se dio cumplimiento al RNF3, en simultáneo con la verificación de RF1 y RF3.\par
+
     \end{section}
