@@ -94,7 +94,7 @@
     \caption{Requerimientos de hardware utilizados para el despliegue del nodo Standalone.}
     \label{table:16}
    \end{table}
-    En el caso de la topología Distribuida, el hardware que se utilizó para cada nodo se muestra en el Cuadro \ref{table:12}.
+    %En el caso de la topología Distribuida, el hardware que se utilizó para cada nodo se muestra en el Cuadro \ref{table:12}.
     \begin{table}[H]
     \centering
     \begin{tabular}{|m{9em}|m{9em}|m{9em}|m{9em}|}
@@ -131,7 +131,7 @@
     \resizebox{\textwidth}{!}{
     \begin{tabular}{|c|c|c|} 
     \hline
-    Velocidad (Mbps) &  Pérdidas de paquetes (\%) & Alertas no detectadas (\%)\\
+    Velocidad (Mbps) &  Pérdidas de paquetes (\%) & Alertas sin detectar (\%)\\
     \hline
     800 & 25 & 40 \\
     \hline
@@ -144,29 +144,35 @@
     \caption{Perdida de paquetes y alertas no detectadas, según la velocidad del enlace}
     \label{table_13}
     \end{table}
-    La pérdida de paquetes por parte de los IDS tuvo como consecuencia una disminución en la cantidad de alertas detectadas. En base a pruebas con duración de un día cada una, se estimó el porcentaje de alertas sin detectar según el porcentaje de pérdidas de paquetes. Los resultados de estas pruebas se observan en el Cuadro \ref{table_13}.
+    La pérdida de paquetes por parte de los IDS tuvo como consecuencia una disminución en la cantidad de alertas detectadas. En base a pruebas llevadas a cabo con TCPreplay\cite{tcpreplay} enviando PCAPs con ataques a los sistemas IDS, con duración de un día cada prueba, se estimó el porcentaje de alertas sin detectar según el porcentaje de pérdidas de paquetes. Los resultados de estas pruebas se observan en el Cuadro \ref{table_13}.
     \end{subsection}
     \begin{section}{Monitoreo de red}
-    Durante el desarrollo de este proyecto, se evaluaron dos tipos de topologías de red. En primer lugar se ensayó con un tipo de topología monolítica que concentraba todos los componentes esenciales de Security Onion. Si bien se conocía que el rendimiento no era óptimo (sección \ref{tipo_nodos}), se decidió comenzar por este punto para evaluar inicialmente al sistema. \par      
-    Con el conocimiento adquirido sobre la naturaleza de Security Onion, se procedió a experimentar y finalmente desplegar en producción, versiones correspondientes a topologías distribuidas de la solución. \par
+    A pesar de conocer, por la sección anterior, que el rendimiento de una topología monolítica no es óptimo en entornos de alto rendimiento, se decidió desplegar esta topología en primer lugar para familiarizarnos con la solución.\par
     \end{section}
     \begin{subsection}{Topología Monolítica de Monitoreo}
-    Con motivo de familiarizarnos con Security Onion, se decidió desplegar este tipo de topología para facilitar la comprensión del funcionamiento de sus componentes. Se realizaron pruebas de los requerimientos funcionales 1 y 3: se comprobó la capacidad de recolectar y almacenar datos de incidentes de seguridad en la infraestructura de red de la organización, al enviar PCAPS e información previamente generadas de ataques que había sufrido la organización en el pasado. \par
-    En la Figura \ref{fig:figura_33_a}, se observa una topología de red en el cual se desplegó la solución con una arquitectura monolítica. En el switch se encuentran conectadas dos terminales y el nodo monolítico de Security Onion. Una terminal simula ser la de un analista consultando y visualizando datos en Security Onion, mientras que la terminal restante envía logs mediante Filebeat \cite{filebeat}, conteniendo información contextual de los activos de la red. Esto permite cumplir el requerimiento funcional 2, que será tratado y demostrado en la Iteración II (Capítulo \ref{iteracion2}).
+    \label{subsec-topo-mono}
+    En la Figura \ref{fig:figura_33_a}, se observa una topología de prueba desarrollada en una red aislada, a modo de experiencia de laboratorio, en el cual se desplegó la solución con una arquitectura monolítica.\par
+    El experimento consistió en demostrar la capacidad de monitoreo y detección de incidentes de Security Onion, mediante el despliegue de un nodo Monolítico y tres terminales de computadoras, una de las cuales (C) simuló ser el atacante.\par
+    En primer lugar, se conectaron las terminales “A” y “B” (la del analista y el generador de logs, respectivamente) a un switch al cual se conectó, mediante su interfaz “Eth1”, uno de los enlaces del servidor de Security Onion. Este enlace, llamado “Eth0” en la Figura \ref{fig:figura_33_a}, sirvió a fines de que el analista en el terminal “A” simule consultas y visualice datos en Security Onion, mientras que el terminal “B” envíaba logs mediante Filebeat \cite{filebeat}, conteniendo información contextual de los activos de la red. \par
     \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{./iteracion_1_imagenes/figura_33_a_topologia_de_prueba_1.png}
-    \caption{Topología monolítica}
+    \includegraphics[width=0.8\textwidth]{./iteracion_1_imagenes/figura_33_a_topologia_de_prueba_1.png}
+    \caption{Topología monolítica de laboratorio}
     \label{fig:figura_33_a}
     \end{figure}
-    El nodo monolítico de Security Onion dispone de dos conexiones. La correspondiente al puerto eth0 es la que permite la administración del sistema y la consulta de sus datos, mientras que la interfaz eth1 es la destina a monitorear el tráfico de una red. En nuestro experimento con esta arquitectura, todo el tráfico fue simulado usando los PCAPS mencionados anteriormente. \par
-    En la Figura \ref{fig:iter1_top_m_unc} se observa la topología de la organización con un nodo Monolítico. Este tiene su interfaz de monitoreo conectada al Switch 3, donde recibe el tráfico reenviado que se produce entre la Dependencia 1 y el mencionado switch.
+    El tercer terminal (C) se conectó mediante un enlace a la interfaz “Eth1” del nodo Monolítico, enviando tráfico simulado mediante PCAPS conteniendo acciones ofensivas. Para lograr esta acción, en el terminal C se utilizó TCPreplay \cite{tcpreplay} para reenviar los PCAPS mencionados. Esta interfaz estaba configurada para monitorear el tráfico en busca de paquetes que pudieran contener una acción ofensiva. 
+    Posteriormente se colocó en producción un nodo Monolítico. En la Figura \ref{fig:iter1_top_m_unc} se observa la topología de la organización incluyendo la conexión con este nodo. Este tiene su interfaz de monitoreo conectada al Switch 3, donde recibe el tráfico reenviado que se produce entre la Dependencia 1 y el mencionado switch.
     \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_topologia_m_unc.png}
     \caption{Despliegue de una topología monolítica de monitoreo}
     \label{fig:iter1_top_m_unc}
     \end{figure}
+    \FloatBarrier
+    Se realizaron pruebas de los requerimientos funcionales 1 y 3: se comprobó el funcionamiento de la recolección y almacenamiento de datos de incidentes de seguridad, al recibir y analizar tráfico proveniente de la Dependencia 1. \par
+    %El nodo monolítico de Security Onion dispone de dos conexiones. La correspondiente al puerto eth0 es la que permite la administración del sistema y la consulta de sus datos, mientras que la interfaz eth1 es la destina a monitorear el tráfico de una red. En nuestro experimento con esta arquitectura, todo el tráfico fue simulado usando los PCAPS mencionados anteriormente. \par
+    %En la Figura \ref{fig:iter1_top_m_unc} se observa la topología de la organización con un nodo Monolítico. Este tiene su interfaz de monitoreo conectada al Switch 3, donde recibe el tráfico reenviado que se produce entre la Dependencia 1 y el mencionado switch.
+    
     \end{subsection}
     
     \begin{subsection}{Topología Distribuida de Monitoreo}
@@ -180,11 +186,20 @@
     \label{fig:topologia_distribuida_1}
     \end{figure}
     Se observa en la Figura \ref{fig:topologia_distribuida_1} los componentes fundamentales de Security Onion para poder llevar a cabo esta topología: un nodo Forward conectado a la interfaz a monitorear y un nodo Master conectado al switch de la red interna. El nodo Master y el Forward se comunican mediante un enlace de administración (interfaz eth0 del nodo Forward), que es el que está conectado al Switch. \par
-    En este caso, como en el descrito en la sección anterior (referencia a la sección anterior), se utilizaron logs y tráficos de red obtenidos con anterioridad. El objetivo de esta experiencia fue comprobar el correcto funcionamiento de los dos nodos. Adicionalmente, con el motivo de probar la generación de notificaciones de alertas, se comprobó el funcionamiento de ElastAlert, que forma parte de los componentes del nodo Master. \par
-    La experiencia consistió en enviar logs desde la terminal con Filebeat, para que posteriormente fueran filtrados. Para esta tarea se empleó Logstash junto a un plugin llamado Grok. Se buscó identificar campos de interés que estuvieran presentes en los logs y se hallaron direcciones IP. Se crearon alertas en ElastAlert que se activaron al detectar estas IP y se enviaron mensajes por un servidor de correo electrónico (propio de la organización) y aplicaciones (Telegram y Slack). Los resultados de este experimento verificaron el RF4, que se trata en la iteración II (Capítulo \ref{iteracion2}). \par
+    En este caso, como en el descrito en la sección anterior (\ref{subsec-topo-mono}), se utilizaron logs y tráficos de red obtenidos con anterioridad. El objetivo de esta experiencia fue comprobar el correcto funcionamiento de los dos nodos. Adicionalmente, con el motivo de probar la generación de notificaciones de alertas, se comprobó el funcionamiento de ElastAlert, que forma parte de los componentes del nodo Master. \par
+    La experiencia consistió en enviar logs desde la terminal con Filebeat hacia el nodo Master, para que posteriormente fueran filtrados. Para esta tarea se empleó Logstash junto a un plugin llamado Grok. Se buscó identificar campos de interés que estuvieran presentes en los logs y se hallaron direcciones IP. Se crearon alertas en ElastAlert que se activaron al detectar estas IP y se enviaron mensajes por un servidor de correo electrónico (propio de la organización) y aplicaciones (Telegram y Slack). Los resultados de este experimento verificaron el RF4, que se trata en la iteración II (Capítulo \ref{iteracion2}). \par
     Si bien Security Onion incluye gran parte de los componentes de un SIEM, es necesario un sistema adicional que sea capaz de recolectar las alertas generadas en primera instancia por el nodo Master y manipular esta información para lograr un manejo eficaz de los incidentes. Este sistema es TheHive. \par
-    TheHive recibe las alertas generadas en el nodo Master por ElastAlert y las introduce en un proceso de correlación de incidentes para proporcionar mayor información del mismo a los analistas del CSIRT. TheHive, Cortex y los componentes del nodo Master (Kibana y Squert) son los únicos componentes visibles con los que interactúan los analistas. \par
-    De esta manera, se completan los componentes del SIEM al ofrecer un manejo centralizado de los datos de incidentes de seguridad de la información. Cuando el nodo Forward identificó un  ataque, notificó al nodo Master del mismo. En este último, ElastAlert generó alertas que fueron enviadas al servidor de TheHive, quien las presentó a los analistas junto a información contextual que intentó correlacionar con información presente en su base de datos.\par
+    TheHive recibe las alertas generadas en el nodo Master por ElastAlert y las introduce en un proceso de correlación de incidentes para proporcionar mayor información del mismo a los analistas del CSIRT. Cortex es un componente asociado a TheHive, que permite desarrollar y automatizar respuestas a incidentes. TheHive y Cortex, junto a los componentes del nodo Master (Kibana y Squert) son los únicos componentes visibles con los que interactúan los analistas. \par
+    
+    Luego de la incorporación de TheHive, se volvió a repetir el experimento detallado anteriormente (Figura \ref{fig:topologia_distribuida_1}), esta vez con el objetivo de que TheHive recibiera las alertas generadas en el nodo Master mediante ElastAlert. La topología del experimento se observa en la Figura \ref{fig:topologia_distribuida_2}.\par
+    \begin{figure}[H]
+    \centering         \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_33_e_topologia_de_prueba_3.png}
+    \caption{Experiencia de laboratorio de la topología distribuida con todos sus componentes}
+    \label{fig:topologia_distribuida_2}
+    \end{figure}
+    \FloatBarrier
+    De esta manera, se completaron los componentes del SIEM al ofrecer un manejo centralizado de los datos de incidentes de seguridad de la información. Cuando el nodo Forward identificó un  ataque, notificó al nodo Master del mismo. En este último, ElastAlert generó alertas que fueron enviadas al servidor de TheHive, quien las presentó a los analistas junto a información contextual que intentó correlacionar con información presente en su base de datos.\par
+    
     Finalmente, se procedió a desplegar la configuración final de la topología de la solución en este proyecto. Esta consistió en agregar un segundo nodo Forward para monitorear el tráfico de una dependencia adicional, como se muestra en la Figura \ref{fig:iter1_top_d_unc}.
     \begin{figure}[H]
     \centering
@@ -201,7 +216,7 @@
     Luego de haber desplegado la topología distribuida que se observa de la Figura \ref{fig:iter1_ver_RF1_RF2}, se verificó el cumplimiento de los requerimientos RF1 y RF3. Para ello se llevó a cabo una acción ofensiva sobre un servidor ubicado en el datacenter. Se seleccionó este servidor mediante un acuerdo con los responsables del área, para fines de evaluación de este proyecto. Este activo de la organización fue configurado a modo de prueba con un servidor web Apache versión 2.4.46, que contaba con una formulario web en PHP versión  7.2.21  y una base de datos MySQL versión 8.0.17.\par
     \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/Topologia de despliegue descentralizada RF1 y RF3.png}
+    \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/Topologia de despliegue descentralizada RF2, RF6 y RF4.png}
     \caption{Despliegue de una topología distribuida de monitoreo}
     \label{fig:iter1_ver_RF1_RF2}
     \end{figure}
@@ -237,9 +252,9 @@
     
     
     \begin{section}{Colorario}
-    En cuanto a la topología de la organización (Figura \ref{fig:iter1_top_unc}), podemos concluir que, en primer lugar, al tratarse de una topología tipo estrella, la mejor opción para monitorear el tráfico entre las dependencias de la organización y el mundo exterior fue conectar los sensores al Switch 1 (el switch troncal), de manera de poder reenviar el tráfico entre las dependencias y el mencionado switch. En segundo lugar, con el objetivo de ofrecer una defensa de punto final sobre activos de información específicos, fue necesario conectar sensores al switch al que se encuentran conectados estos activos. En este caso, se conectaron sensores al Switch 2. \par 
-    Se pudo observar que la topología Monolítica fue ineficiente para el uso en entornos de producción, dado que la pila Elastic y los componentes de los sensores IDS demandaron un uso intensivo de hardware. Si bien este tipo de topología fue útil a fines de probar el sistema o para monitorear enlaces de reducido tráfico y poco ancho de banda, resultó totalmente ineficiente en entornos más complejos.\par
-    En la organización donde desplegamos nuestro proyecto, debieron ser monitoreados múltiples enlaces y cada uno de estos con un ancho de banda mucho más grande que el conveniente para un nodo monolítico, este tipo de topología demostró ser ineficiente. Las razones se debieron a los enormes requisitos de hardware necesarios para monitorear un enlace de 1 Gbps y considerando que el despliegue final requirió el monitoreo de múltiples enlaces con este ancho de banda, este tipo de topología fue incapaz de escalar utilizando el hardware disponible.\par
-    Como consecuencia de la incapacidad de escalamiento horizontal descrita y siendo esta un requerimiento no funcional de este proyecto, se procedió a evaluar el despliegue de una topología distribuida de Security Onion. Los resultados de esta prueba fueron positivos, por lo cual se dio cumplimiento al RNF3, en simultáneo con la verificación de RF1 y RF3.\par
+    En cuanto a la topología de la organización (Figura \ref{fig:iter1_top_unc}), podemos concluir que, la mejor opción para monitorear el tráfico entre las dependencias de la organización y el exterior fue conectar los nodos Forward al Switch 1 (el switch troncal), para recibir el tráfico reenviado entre las dependencias y el mencionado switch. Por otro lado, con el objetivo de lograr una defensa de punto final sobre activos de información específicos, fue necesario conectar un nodo Forward al switch (Switch 2) al que se encuentran conectados estos activos. Estas conexiones se vieron reflejadas en la Figura \ref{fig:iter1_ver_RF1_RF2}. \par
+    Se observó que la topología Monolítica fue ineficiente para el uso en entornos de producción, dado que la pila Elastic y los componentes de los sensores IDS de este nodo demandaron un uso intensivo de hardware. Si bien este tipo de topología fue útil a fines de probar el sistema o para monitorear enlaces de reducido tráfico y poco ancho de banda, resultó ineficaz en entornos más complejos. Esto se debió a los enormes requisitos de hardware necesarios para monitorear un enlace de 1 Gbps y considerando que el despliegue final requirió el monitoreo de múltiples enlaces con este ancho de banda, este tipo de topología fue incapaz de escalar utilizando el hardware disponible.\par
+    Como consecuencia de la incapacidad de escalamiento horizontal descrita y siendo esta un requerimiento no funcional de este proyecto, se desplegó una topología distribuida de Security Onion. Los resultados del monitoreo fueron positivos, por lo cual se dio cumplimiento al RNF3, en simultáneo con la verificación de RF1 y RF3.\par
+    
 
     \end{section}

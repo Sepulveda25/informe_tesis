@@ -161,6 +161,9 @@ Se escribieron archivos de configuración para cada tipo de evento, de manera ta
     
 \chapter{Modificación de un filtro de Logstash}
 El proceso de creación de este filtro consistió en copiar el archivo de configuración de Filebeat: \textit{9500\_output\_beats\_custom.conf} que se encuentra en el directorio mencionado anteriormente. El archivo fue copiado a la carpeta \textit{/etc/logstash/custom}, donde fue modificado para crear el filtro con Grok. Este fue creado teniendo en cuenta el cuerpo de los mensajes provenientes del archivo de logs analizado, dado que se conocían los campos de interés que contenían los logs y que por lo tanto se deseaba extraer. Una vez finalizada la modificación del archivo, se reinicio el servicio de Logstash y se comprobó que el archivo \textit{logstash.log} para verificar que no hubiera errores.\par
+\chapter{Edición de filtros de Logstash}
+Logstash posee varios filtros para todos los tipos de entradas que soporta.
+Fue posible editar y administrar estos filtros utilizando archivos de configuración ubicados en la carpeta \textit{/etc/logstash/conf.d.available/}. Para este proyecto se eligió editar el filtro que procesa los datos provenientes de Filebeat, como se indicó anteriormente.\par
 
 
     
