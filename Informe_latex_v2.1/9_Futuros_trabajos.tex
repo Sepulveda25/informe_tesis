@@ -1,0 +1,14 @@
+\chapter{\Large Trabajos Futuros }
+En cuanto a las oportunidades de mejora identificadas para posteriores trabajos, se encuentran:
+
+\begin{enumerate}
+    \item \textbf{Despliegue y optimización de nodos de almacenamiento}: esto se debe a que el volumen de datos generados por el trafico entre las dependencias monitoreadas y el \textit{switch} central es demasiado alto para depender del almacenamiento en un solo nodo (\textit{Master}), por lo que resulta necesario desplegar nodos de almacenamiento (\textit{Storage}) distribuido e implementar servicios de \textit{buffer} y gestión de carga tales como Redis.
+    
+    \item \textbf{Automatización de acciones según el tipo de ataque}: TheHive y Cortex permiten desencadenar respuestas automáticas, sin embargo el inicio del proceso depende, por defecto, de una orden del analista. TheHive soporta la implementación de \textit{webhooks}, pero durante el transcurso de la experiencia de este Proyecto Integrador, dicha funcionalidad estaba en estado \textit{beta} por parte de sus desarrolladores, por lo que las implementaciones desarrolladas mediante \textit{webhooks} para ejecutar \textit{responders} de Cortex no pasaron de la fase de experimentación.
+    
+    \item \textbf{Comprobación automática del estado de los servicios en un tablero}: como \textit{Security Onion} cuenta con una suite de aplicaciones seria deseable tener un tablero para poder ver la salud de los servicios y tener la información actualizada minuto a minuto.
+    
+    \item \textbf{Determinar la máxima cantidad de nodos \textit{Forward} que es posible atender con un nodo \textit{Master}}: Quedo por verificar la cantidad máxima de nodos \textit{Forward} que puede soportar un nodo \textit{Master}. Solo se verifico la cantidad de paquetes que pierde un nodo \textit{Forward} según el volumen de trafico de la red. 
+
+\end{enumerate}
+ 
