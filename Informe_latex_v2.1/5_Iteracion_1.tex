@@ -17,7 +17,7 @@
     \begin{subsection}{Definición y configuración de las redes a observar}
     Se analizó el ancho de banda de las dependencias existentes y se decidió monitorear dos de ellas. Se seleccionaron las de mayor volumen de tráfico en función de mediciones realizadas a lo largo de una semana y de datos históricos. Las dependencias seleccionadas tenían un enlace con ancho de banda de 1 Gbps cada una. \par
     Las Figuras \ref{fig:figura_35_trafico_dia} muestra el volumen de tráfico medido en un periodo de tiempo de un día (exceptuando las horas en las que la actividad era mínima), mientras que en la Figura \ref{fig:figura_36_trafico_semana} muestra un periodo de una semana. Estos gráficos fueron obtenidos mediante el uso de LibreNMS \cite{librenms} (versión 1.48).\par
-    Los datos de las Figuras 5.2 y 5.3 fueron tomados desde la interfaz Gig0 del \textit{Switch} 1 de la Figura 5.1, esto quiere decir que el volumen de tráfico corresponde a la Dependencia 1. Las interfaces Gig3, Gig-M y Gig-J del \textit{Switch} 1 tenían un comportamiento similar.\par
+    Los datos de las Figuras 5.2 y 5.3 fueron tomados desde la interfaz Gig0 del \textit{Switch} 1 de la Figura 5.1, esto quiere decir que el volumen de tráfico corresponde a la Dependencia1. Las interfaces Gig3, Gig-M y Gig-J del \textit{Switch} 1 tenían un comportamiento similar.\par
     \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{./iteracion_1_imagenes/figura_35_trafico_dia.png}
@@ -177,7 +177,7 @@
     
     \begin{subsection}{Topología Distribuida de Monitoreo}
     \label{sec_topo_dist}
-    Después de comprobar el funcionamiento de los principales componentes de Security Onion y obtener la experiencia descrita en la sección anterior, se procedió a considerar el despliegue de una topología distribuida. Este tipo de topología presenta considerables ventajas respecto de su alternativa monolítica, fundamentalmente en términos de rendimiento del hardware y flexibilidad de adaptación, como se mencionó en el Capítulo 4.\par
+    Después de comprobar el funcionamiento de los principales componentes de Security Onion y obtener la experiencia descrita en la sección anterior, se procedió a considerar el despliegue de una topología distribuida. Este tipo de topología presenta considerables ventajas respecto de su alternativa monolítica, fundamentalmente en términos de rendimiento del hardware y flexibilidad de adaptación, como se mencionó en el Capítulo~\ref{tipos_de_arquitectura}.\par
     En primer lugar, se desplegó una versión simplificada para verificar el funcionamiento de los componentes de los dos nodos que la componen (nodos \textit{Forward} y \textit{Master}) y la comunicación entre ellos.
     \begin{figure}[H]
     \centering
@@ -253,7 +253,7 @@
     
     \begin{section}{Colorario}
     En cuanto a la topología de la organización (Figura \ref{fig:iter1_top_unc}), podemos concluir que, la mejor opción para monitorear el tráfico entre las dependencias de la organización y el exterior fue conectar los nodos \textit{Forward} al \textit{Switch} 1 (el \textit{switch} troncal), para recibir el tráfico reenviado entre las dependencias y el mencionado \textit{switch}. Por otro lado, con el objetivo de lograr una defensa de punto final sobre activos de información específicos, fue necesario conectar un nodo \textit{Forward} al \textit{switch} (\textit{Switch} 2) al que se encuentran conectados estos activos. Estas conexiones se vieron reflejadas en la Figura \ref{fig:iter1_ver_RF1_RF2}. \par
-    Se observó que la topología Monolítica fue ineficiente para el uso en entornos de producción, dado que la pila Elastic y los componentes de los sensores IDS de este nodo demandaron un uso intensivo de \textit{hardware}. Si bien este tipo de topología fue útil a fines de probar el sistema o para monitorear enlaces de reducido tráfico y poco ancho de banda, resultó ineficaz en entornos más complejos. Esto se debió a los enormes requisitos de hardware necesarios para monitorear un enlace de 1 Gbps y considerando que el despliegue final requirió el monitoreo de múltiples enlaces con este ancho de banda, este tipo de topología fue incapaz de escalar utilizando el hardware disponible.\par
+    Se observó que la topología Monolítica fue ineficiente para el uso en entornos de producción, dado que la pila Elastic y los componentes de los sensores IDS de este nodo demandaron un uso intensivo de hardware. Si bien este tipo de topología fue útil a fines de probar el sistema o para monitorear enlaces de reducido tráfico y poco ancho de banda, resultó ineficaz en entornos más complejos. Esto se debió a los enormes requisitos de hardware necesarios para monitorear un enlace de 1 Gbps y considerando que el despliegue final requirió el monitoreo de múltiples enlaces con este ancho de banda, este tipo de topología fue incapaz de escalar utilizando el hardware disponible.\par
     Como consecuencia de la incapacidad de escalamiento horizontal descrita y siendo esta un requerimiento no funcional de este proyecto, se desplegó una topología distribuida de Security Onion. Los resultados del monitoreo fueron positivos, por lo cual se dio cumplimiento al RNF3, en simultáneo con la verificación de RF1 y RF3.\par
     
 

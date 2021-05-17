@@ -94,7 +94,7 @@
     \hline
     Security Onion Nodo Master & Security Onion V16.04 & Procesar y almacenar alertas & VLAN 1 \\
     \hline
-    Security Onion Nodo Master & Security Onion v16.04 & Analizar el tráfico en la red y notificar anomalías al nodo Master & VLAN 1 \\
+    Security Onion Nodo Forward & Security Onion v16.04 & Analizar el tráfico en la red y notificar anomalías al nodo Master & VLAN 1 \\
     \hline
     TheHive - Cortex & Ubuntu v18.04 & Mostrar las alertas a los analistas del SIEM y accionar sobre el sistema  & VLAN 1 \\
     \hline
@@ -213,7 +213,7 @@ Desde esta computadora se realizaran los ataques al servidor víctima, para ello
     El objetivo fue identificar el servidor víctima, los puertos abiertos y los servicios que estaban expuestos.
     El comando utilizado fue: 
     \begin{verbatim}
-        nmap -sT -sV -O -A -T1 172.16.52.105
+        nmap -sT -sV -O -A -T5 172.16.52.105
     \end{verbatim}
     Donde los \textit{flags} utilizados representan:
     \begin{itemize}
@@ -323,7 +323,7 @@ Se utilizo Wireshark \cite{wireshark} para capturar el tráfico de la secuencia 
     \end{subsubsection}
     \begin{subsubsection} {Fase 2: Identificación y análisis de vulnerabilidades}
     Posteriormente a la fase de reconocimiento, es necesario evaluar la información recogida para identificar potenciales vulnerabilidades en el servidor objetivo y en la aplicación web presente. \par
-    Para realizar esto, se utilizó Nessus (versión \textit{Essentials})\cite{nessus}, un \textit{software} que utiliza información provista por herramientas similares a Nmap, para recabar información (o utilizar la generada por Nmap en una instancia de reconocimiento previa), para analizar los resultados y buscar en bases de datos CVE (siglas en inglés de \textit{Common Vulnerabilities and Exposures}) vulnerabilidades que puedan existir en las versiones específicas de los servicios y puertos descubiertos.\par
+    Para realizar esto, se utilizó Nessus (versión \textit{Essentials})\cite{nessus}, un software que utiliza información provista por herramientas similares a Nmap, para recabar información (o utilizar la generada por Nmap en una instancia de reconocimiento previa), para analizar los resultados y buscar en bases de datos CVE (siglas en inglés de \textit{Common Vulnerabilities and Exposures}) vulnerabilidades que puedan existir en las versiones específicas de los servicios y puertos descubiertos.\par
     En la siguientes figuras (Fig \ref{fig:nessus-1} a Fig \ref{fig:nessus-3}) se muestran los resultados, agrupados por categoría, del análisis de vulnerabilidades:
     \begin{figure}[H]
     \centering
